@@ -415,7 +415,7 @@ function seedPosts(){
 function captionFor(c,t){return `${t.replace(/^(Reel|Carousel|Story):\s*/,'')} bei ${c.name} ✨ Alle Infos im Link in der Bio. Wir freuen uns auf euch!`}
 
 const KEY='wemedia-cockpit-v1';let S;
-function load(){try{const r=localStorage.getItem(KEY);if(r){S=JSON.parse(r);return}}catch(e){}S={posts:seedPosts(),users:USERS,access:Object.fromEntries(Object.entries(ROLES).map(([k,v])=>[k,v.mods.slice()])),role:null,theme:'light',briefs:{}}}
+function load(){try{const r=localStorage.getItem(KEY);if(r){S=JSON.parse(r);const ids=MODULES.map(m=>m.id);for(const k in S.access)S.access[k]=S.access[k].filter(m=>ids.includes(m));for(const k in ROLES)if(!S.access[k])S.access[k]=ROLES[k].mods.slice();return}}catch(e){}S={posts:seedPosts(),users:USERS,access:Object.fromEntries(Object.entries(ROLES).map(([k,v])=>[k,v.mods.slice()])),role:null,theme:'light',briefs:{}}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 load();
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
