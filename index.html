@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23c2ec86'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial' font-weight='800' font-size='18' fill='%2300343f'%3EW%3C/text%3E%3C/svg%3E">
+<style>img{max-width:100%}[hidden]{display:none!important}</style>
+<title>WEMEDIA Cockpit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 272px dark-green sidebar + light paper canvas; lime accent on pill buttons; cards 22px; hero gradient band. Mirrors the AFGM dashboard system. */
+:root{
+  --page:#f3f3ef;--card:#ffffff;--card-2:#f8f8f5;--panel:#ececе7;--panel:#ecece7;--hair:#00343f12;--hair-strong:#00343f24;
+  --ink:#00343f;--muted:#5b7076;--faint:#8a9ba0;
+  --accent:#c2ec86;--accent-2:#b0e167;--accent-deep:#0f4a52;--accent-soft:#eaf7d4;--on-accent:#00343f;
+  --side-a:#0d4147;--side-b:#07292e;--side-ink:#ffffffbf;--hero:linear-gradient(135deg,#083240 0%,#00343f 60%,#0f4a52 100%);
+  --good:#1d7745;--good-bg:#e1f3e6;--warn:#a5620a;--warn-bg:#fdf2e0;--rose:#bf3838;--rose-bg:#fdeceb;--blue:#1a7ba3;--blue-bg:#e3f0f6;--violet:#6d4fc2;--violet-bg:#ece8f8;
+  --scrim:#00343f66;--shadow:0 1px 2px #00343f0a;--shadow-pop:0 0 0 1px var(--hair),0 24px 60px -20px #00343f4d;
+  --font:"Inter Tight",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,Menlo,Consolas,monospace;
+  --r-xl:26px;--r-lg:22px;--r-md:16px;--r-sm:12px;--gap:16px;--ease:cubic-bezier(.22,1,.36,1);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --page:#06181b;--card:#0b272c;--card-2:#0f3137;--panel:#0a2227;--hair:#ffffff14;--hair-strong:#ffffff26;--ink:#eef5f3;--muted:#9fb4b8;--faint:#6f8589;
+  --accent-soft:#1c3a28;--good:#5fd39a;--good-bg:#12302080;--warn:#f2b63d;--warn-bg:#3a2d0f;--rose:#f27a7a;--rose-bg:#3a1515;--blue:#6cc3ea;--blue-bg:#0f2f3d;--violet:#b9a3f0;--violet-bg:#2a2046;
+  --scrim:#00000099;--shadow:0 1px 2px #00000040;--shadow-pop:0 0 0 1px var(--hair-strong),0 24px 60px -20px #000c;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --page:#06181b;--card:#0b272c;--card-2:#0f3137;--panel:#0a2227;--hair:#ffffff14;--hair-strong:#ffffff26;--ink:#eef5f3;--muted:#9fb4b8;--faint:#6f8589;
+  --accent-soft:#1c3a28;--good:#5fd39a;--good-bg:#12302080;--warn:#f2b63d;--warn-bg:#3a2d0f;--rose:#f27a7a;--rose-bg:#3a1515;--blue:#6cc3ea;--blue-bg:#0f2f3d;--violet:#b9a3f0;--violet-bg:#2a2046;
+  --scrim:#00000099;--shadow:0 1px 2px #00000040;--shadow-pop:0 0 0 1px var(--hair-strong),0 24px 60px -20px #000c;color-scheme:dark}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--font);font-size:14.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--side-a)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}input,select,textarea{font:inherit;color:var(--ink)}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:600;letter-spacing:-.02em}.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:0;box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--accent-2)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* login */
+#login{min-height:100%;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-left,0px)) 24px max(16px,env(safe-area-inset-right,0px));background:var(--hero);color:#fff}
+.login-box{width:min(960px,100%)}
+.login-box .brand{justify-content:center;margin-bottom:8px;color:#fff}
+.login-box p{text-align:center;color:#ffffffb3;margin:0 0 24px}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.role{background:#ffffff14;border:1px solid #ffffff22;border-radius:var(--r-lg);padding:18px;text-align:left;display:flex;flex-direction:column;gap:8px;color:#fff;transition:transform .15s var(--ease),background .15s;backdrop-filter:blur(8px)}
+.role:hover{transform:translateY(-2px);background:#ffffff22}
+.role .avatar{width:40px;height:40px;font-size:13px;background:var(--accent);color:var(--on-accent)}
+.role b{font-size:15px;font-weight:600}.role span{font-size:12.5px;color:#ffffffa6}
+.role .mods{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.role .mods i{font-style:normal;font-size:10.5px;padding:2px 8px;border-radius:99px;background:#ffffff1a;color:#fff}
+.role.admin .mods i{background:var(--accent);color:var(--on-accent)}
+.login-box .demo{color:#ffffff80}
+
+/* shell */
+.shell{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100%}
+.side{background:linear-gradient(180deg,var(--side-a),var(--side-b));color:var(--side-ink);padding:22px 16px 20px max(16px,env(safe-area-inset-left,0px));position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;scrollbar-width:thin}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.12em;font-size:16px;text-decoration:none;color:#fff;padding:0 8px}
+.brand .mark{width:30px;height:30px;border-radius:9px;background:var(--accent);display:grid;place-items:center;color:var(--on-accent);font-weight:800;font-size:14px;letter-spacing:0}
+.brand small{display:block;font-weight:500;letter-spacing:.14em;font-size:8.5px;color:#ffffff8c;margin-top:1px}
+.rolepill{margin:14px 8px 10px;display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:99px;border:1px solid #ffffff2e;font-size:11px;letter-spacing:.12em;font-weight:600;text-transform:uppercase;color:#fff}
+.rolepill::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.side .sec{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#ffffff73;font-weight:600;padding:14px 10px 6px}
+.side a,.side button.nv{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;color:var(--side-ink);text-decoration:none;width:100%;text-align:left;transition:background .15s}
+.side a:hover,.side button.nv:hover{background:#ffffff14;color:#fff}
+.side .ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#ffffff14;flex:none}
+.side .ic svg{width:15px;height:15px}
+.side .lbl b{display:block;font-size:14.5px;font-weight:600;color:#fff;line-height:1.15}.side .lbl span{font-size:11.5px;color:#ffffff8c}
+.side a.active,.side button.nv.active{background:var(--accent);color:var(--on-accent)}
+.side a.active .lbl b,.side button.nv.active .lbl b{color:var(--on-accent)}.side a.active .lbl span,.side button.nv.active .lbl span{color:#00343fa6}
+.side a.active .ic,.side button.nv.active .ic{background:#00343f1f}
+.side .cnt{margin-left:auto;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:var(--accent);color:var(--on-accent)}
+.side a.active .cnt{background:#00343f;color:#fff}
+.side .foot{margin-top:auto;padding-top:14px;border-top:1px solid #ffffff1f;display:flex;gap:10px;align-items:center;padding-left:8px;font-size:12px;color:#ffffff8c}
+.main{min-width:0;padding:0 max(20px,env(safe-area-inset-right,0px)) 40px 20px}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:12px;height:68px;background:var(--page);margin:0 -20px 10px;padding:0 20px}
+.crumb{font-size:13.5px;color:var(--muted)}.crumb b{color:var(--ink);font-weight:600}.crumb span{margin:0 6px;color:var(--faint)}
+.spacer{flex:1}
+.search{position:relative;display:none;align-items:center;gap:8px;width:280px;height:44px;padding:0 14px;background:var(--card);border:1px solid var(--hair);border-radius:99px;color:var(--faint)}
+@media(min-width:1180px){.search{display:flex}}
+.search input{flex:1;border:0;background:none;outline:0;min-width:0;color:var(--ink)}
+.search kbd{font:600 10.5px var(--mono);padding:2px 6px;border:1px solid var(--hair-strong);border-radius:6px;color:var(--faint)}
+.search-pop{position:absolute;top:50px;left:0;right:0;background:var(--card);border-radius:16px;box-shadow:var(--shadow-pop);padding:6px;display:none;max-height:320px;overflow:auto;z-index:30}
+.search-pop.open{display:block}.search-pop button{display:flex;width:100%;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;text-align:left;color:var(--ink)}.search-pop button:hover{background:var(--panel)}.search-pop .k{font-size:11px;color:var(--faint);margin-left:auto}
+.icon-btn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--ink);background:var(--card);border:1px solid var(--hair);position:relative;flex:none}
+.icon-btn:hover{background:var(--card-2)}.icon-btn .dot{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:700;display:grid;place-items:center}
+.who{display:flex;align-items:center;gap:10px;padding:5px 14px 5px 5px;border-radius:99px;background:var(--card);border:1px solid var(--hair);font-size:12.5px;cursor:pointer}
+.who b{display:block;font-size:13px;line-height:1.1;font-weight:600}.who span{font-size:11px;color:var(--muted)}
+.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;background:var(--accent-soft);color:var(--accent-deep);flex:none}
+.avatar.sm{width:26px;height:26px;font-size:10px}
+
+/* page */
+.view{display:none;animation:rise .4s var(--ease);max-width:1400px;margin:0 auto}.view.active{display:block}
+@keyframes rise{from{opacity:.001;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:18px}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);background:var(--card);border:1px solid var(--hair);padding:5px 12px;border-radius:99px}
+.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent-2)}
+.page-head h1{font-size:34px;line-height:1.1;margin-top:10px}.page-head p{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:99px;font-weight:600;font-size:14px;background:var(--card);border:1px solid var(--hair-strong);color:var(--ink);transition:transform .15s var(--ease),background .15s;text-decoration:none}
+.btn:hover{background:var(--card-2)}.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:transparent}.btn.primary:hover{background:var(--accent-2)}
+.btn.dark{background:var(--accent-deep);color:#fff;border-color:transparent}.btn.dark:hover{background:#00343f}
+.btn.ghost{background:none;border-color:transparent;color:var(--muted)}.btn.ghost:hover{background:var(--panel);color:var(--ink)}
+.btn.sm{height:34px;padding:0 13px;font-size:13px}.btn.danger{color:var(--rose)}.btn.warn{color:var(--warn)}.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn .arr{width:24px;height:24px;border-radius:50%;background:#00343f1f;display:grid;place-items:center;margin:0 -6px 0 2px}.btn .arr svg{width:12px;height:12px}
+.grid{display:grid;gap:var(--gap)}.g-2{grid-template-columns:repeat(2,minmax(0,1fr))}.g-3{grid-template-columns:repeat(3,minmax(0,1fr))}.g-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g-12{grid-template-columns:repeat(12,minmax(0,1fr))}.c-3{grid-column:span 3}.c-4{grid-column:span 4}.c-5{grid-column:span 5}.c-6{grid-column:span 6}.c-7{grid-column:span 7}.c-8{grid-column:span 8}.c-9{grid-column:span 9}.c-12{grid-column:span 12}
+@media(max-width:1100px){.g-12>*{grid-column:span 6}.g-4,.g-3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.g-12>*,.g-2>*,.g-3>*,.g-4>*{grid-column:span 12}.g-2,.g-3,.g-4{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--card);border:1px solid var(--hair);border-radius:var(--r-lg);padding:20px;min-width:0}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}
+.card-head h2{font-size:17px}.card-head .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.link{font-size:13.5px;font-weight:600;color:var(--ink);background:none;padding:0;text-decoration:none}.link:hover{text-decoration:underline}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--panel);color:var(--muted);white-space:nowrap;letter-spacing:.02em}
+.pill.good{background:var(--good-bg);color:var(--good)}.pill.warn{background:var(--warn-bg);color:var(--warn)}.pill.rose{background:var(--rose-bg);color:var(--rose)}.pill.acc{background:var(--accent-soft);color:var(--accent-deep)}.pill.blue{background:var(--blue-bg);color:var(--blue)}.pill.violet{background:var(--violet-bg);color:var(--violet)}
+.kpi{position:relative}.kpi .ic{width:38px;height:38px;border-radius:50%;background:var(--panel);display:grid;place-items:center;margin-bottom:16px}.kpi .ic svg{width:16px;height:16px}
+.kpi .k{font-size:13.5px;color:var(--ink);font-weight:600}.kpi .v{font-size:32px;font-weight:600;letter-spacing:-.03em;line-height:1.05;margin:0 0 6px}.kpi .d{font-size:12.5px;color:var(--muted)}
+.kpi .go{position:absolute;top:18px;right:18px;color:var(--faint)}
+.section-title{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:18px 0 10px}.section-title:first-child{margin-top:0}
+.tabs{display:flex;gap:4px;padding:4px;background:var(--card);border:1px solid var(--hair);border-radius:99px;width:max-content;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.tabs button{padding:7px 14px;border-radius:99px;font-weight:600;font-size:13.5px;color:var(--muted);white-space:nowrap;display:inline-flex;gap:6px;align-items:center}.tabs button.active{background:var(--accent-deep);color:#fff}
+.toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;min-width:0}.field label{font-size:12px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea,.sel{height:42px;padding:0 14px;border-radius:14px;border:1px solid var(--hair-strong);background:var(--card);outline:0;width:100%;min-width:0;color:var(--ink);font:inherit}
+.sel{width:auto;min-width:220px;border-radius:99px}
+.field textarea{height:auto;min-height:88px;padding:10px 14px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus,.sel:focus{border-color:var(--accent-2);box-shadow:0 0 0 3px var(--accent-soft)}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:520px){.f-row{grid-template-columns:1fr}}
+.table-wrap{overflow-x:auto;border-radius:var(--r-lg);border:1px solid var(--hair);background:var(--card)}
+table{width:100%;border-collapse:collapse;min-width:720px}
+th{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:600;text-align:left;padding:14px 18px;border-bottom:1px solid var(--hair)}
+td{padding:12px 18px;border-bottom:1px solid var(--hair);vertical-align:middle}tr:last-child td{border-bottom:0}tbody tr{cursor:pointer}tbody tr:hover td{background:var(--card-2)}
+td.r,th.r{text-align:right}
+.co{width:34px;height:34px;border-radius:50%;background:var(--panel);display:grid;place-items:center;font-weight:600;font-size:13px;color:var(--ink);flex:none}
+.pc{display:flex;align-items:center;gap:12px}.pc b{display:block;font-size:14px;font-weight:600}.pc span{font-size:12px;color:var(--muted)}
+.bar{height:7px;border-radius:99px;background:var(--panel);overflow:hidden}.bar i{display:block;height:100%;background:var(--accent-2);border-radius:99px;transition:width .8s var(--ease)}.bar i.lo{background:var(--rose)}.bar i.mid{background:var(--warn)}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--accent-deep);color:#fff;padding:11px 18px;border-radius:99px;font-weight:600;font-size:13.5px;opacity:0;transition:all .3s var(--ease);z-index:60;pointer-events:none;max-width:calc(100% - 32px)}.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* hero */
+.hero{background:var(--hero);color:#fff;border:0;border-radius:var(--r-xl);padding:34px 36px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:center;margin-bottom:var(--gap)}
+.hero .pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.hero .pills span{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;padding:5px 12px;border-radius:99px;background:#ffffff1f;color:#fff}
+.hero h1{font-size:clamp(28px,3.2vw,44px);color:#fff;line-height:1.08;margin-bottom:12px}.hero p{color:#ffffffbf;font-size:15.5px;max-width:52ch;margin:0 0 20px}.hero p b{color:#fff}
+.hero .side-box{background:#ffffff14;border:1px solid #ffffff24;border-radius:var(--r-lg);padding:20px;backdrop-filter:blur(6px)}
+.hero .side-box .lbl{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}.hero .side-box .v{font-size:22px;font-weight:600;margin:4px 0 2px}.hero .side-box .s{font-size:12.5px;color:#ffffffa6}
+.hero .side-box .segs{display:flex;gap:4px;margin-top:14px}.hero .side-box .segs i{flex:1;height:5px;border-radius:99px;background:#ffffff33}.hero .side-box .segs i.on{background:var(--accent)}
+.hero .btn{border-color:#ffffff3d;color:#fff;background:transparent}.hero .btn.primary{background:var(--accent);color:var(--on-accent);border-color:transparent}
+@media(max-width:900px){.hero{grid-template-columns:1fr;padding:26px}}
+.band{display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:var(--r-lg);background:var(--accent-soft);border:1px solid #b0e16780;margin-bottom:var(--gap)}
+.band .th{width:56px;height:56px;border-radius:14px;flex:none;background:var(--hero)}.band .eb{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--accent-deep)}.band b{display:block;font-size:15px;font-weight:600}.band span{font-size:12.5px;color:var(--muted)}
+.band .go{margin-left:auto;width:40px;height:40px;border-radius:50%;background:var(--accent-deep);color:#fff;display:grid;place-items:center;flex:none}
+
+/* modules home */
+.mod{display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:transform .15s var(--ease),border-color .15s;position:relative}
+.mod:hover{transform:translateY(-2px);border-color:var(--accent-2)}
+.mod .ic{width:40px;height:40px;border-radius:50%;background:var(--panel);color:var(--ink);display:grid;place-items:center}.mod .ic svg{width:17px;height:17px}
+.mod h3{font-size:16px}.mod p{margin:0;font-size:13px;color:var(--muted)}.mod .st{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;align-items:center}
+.mod.locked{opacity:.55}.mod.locked:hover{transform:none;border-color:var(--hair)}.mod .ext{font-size:11px;color:var(--faint)}
+.row-list .row{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--hair)}.row-list .row:first-child{border-top:0}
+.row .t{font-weight:600;font-size:14px}.row .s{font-size:12.5px;color:var(--muted)}.row .r{margin-left:auto;text-align:right}
+
+/* social: clients */
+.client-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.cl{display:flex;flex-direction:column;gap:12px;cursor:pointer;transition:transform .15s var(--ease),border-color .15s}.cl:hover{transform:translateY(-2px);border-color:var(--accent-2)}
+.cl .hd{display:flex;gap:12px;align-items:center}.cl .hd b{font-size:15px;display:block;font-weight:600}.cl .hd span{font-size:12px;color:var(--muted)}
+.cl .nums{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.cl .nums div{background:var(--panel);border-radius:14px;padding:9px 10px}.cl .nums span{font-size:10.5px;color:var(--muted);display:block}.cl .nums b{font-size:15px;font-weight:600}
+.cl .plan{font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between}
+
+/* calendar */
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal .dh{font-size:10.5px;font-weight:600;color:var(--faint);text-align:center;padding:4px 0;letter-spacing:.1em;text-transform:uppercase}
+.cal .d{min-height:94px;background:var(--panel);border-radius:14px;padding:7px;display:flex;flex-direction:column;gap:4px}
+.cal .d.off{opacity:.35}.cal .d.today{outline:2px solid var(--accent-2)}
+.cal .d .n{font-size:11px;color:var(--faint);font-weight:600}
+.cal .p{border-radius:8px;padding:4px 7px;font-size:11px;font-weight:600;cursor:pointer;background:var(--card);border-left:3px solid var(--accent-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal .p:hover{background:var(--card-2)}
+.cal .p.s-konzept{border-color:var(--faint)}.cal .p.s-briefing{border-color:var(--violet)}.cal .p.s-produktion{border-color:var(--blue)}.cal .p.s-intern,.cal .p.s-freigabe{border-color:var(--warn)}.cal .p.s-aenderung{border-color:var(--rose)}.cal .p.s-freigegeben,.cal .p.s-geplant{border-color:var(--accent-2)}.cal .p.s-live{border-color:var(--good)}
+@media(max-width:720px){.cal .d{min-height:60px;padding:4px}.cal .p{font-size:0;padding:0;height:6px;border-left:0;background:var(--accent-2)}}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:12px}
+
+/* instagram preview */
+.ig{max-width:420px;margin:0 auto;background:var(--card);border:1px solid var(--hair);border-radius:var(--r-xl);padding:18px;color:var(--ink)}
+.ig .ph{display:flex;gap:14px;align-items:center}
+.ig .ph .av{width:66px;height:66px;border-radius:50%;background:conic-gradient(var(--accent-2),var(--accent-deep),var(--warn),var(--accent-2));padding:3px;flex:none}
+.ig .ph .av div{width:100%;height:100%;border-radius:50%;background:var(--card);display:grid;place-items:center;font-weight:700;font-size:20px}
+.ig .ph .stats{display:flex;gap:12px;flex:1;justify-content:space-around;text-align:center}.ig .ph .stats b{display:block;font-size:16px;font-weight:600}.ig .ph .stats span{font-size:11.5px;color:var(--muted)}
+.ig .bio{font-size:12.5px;margin:12px 0}.ig .bio b{display:block;font-weight:600}
+.ig .igtabs{display:flex;border-top:1px solid var(--hair);margin:0 -18px;padding:0 18px}.ig .igtabs span{flex:1;text-align:center;padding:9px;font-size:10.5px;letter-spacing:.1em;color:var(--faint);border-top:2px solid transparent}.ig .igtabs span.on{color:var(--ink);border-color:var(--ink)}
+.iggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin:0 -18px -18px;border-radius:0 0 var(--r-xl) var(--r-xl);overflow:hidden}
+.tile{aspect-ratio:1;position:relative;cursor:pointer;display:flex;align-items:flex-end;padding:8px;font-size:10.5px;font-weight:600;color:#fff;text-shadow:0 1px 4px #0009;overflow:hidden}
+.tile:hover::after{content:"";position:absolute;inset:0;background:#fff2}
+.tile .tp{position:absolute;top:6px;right:6px;font-size:9.5px;padding:1px 6px;border-radius:99px;background:#0008;color:#fff}
+.tile .stx{position:absolute;top:7px;left:7px;width:9px;height:9px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 2px #0006}.tile .stx.ok{background:var(--accent)}.tile .stx.bad{background:var(--rose)}.tile .stx.grey{background:#999}
+.tile span{position:relative}
+.v1{background:linear-gradient(135deg,#083240,#1a7ba3)}.v2{background:linear-gradient(135deg,#0f4a52,#7fc2d6)}.v3{background:linear-gradient(135deg,#3b2d5c,#8d7bd6)}.v4{background:linear-gradient(135deg,#6b4a12,#e4b94a)}.v5{background:linear-gradient(135deg,#5c1f1f,#d86a6a)}.v6{background:linear-gradient(135deg,#0d4a3a,#6fcf97)}.v7{background:linear-gradient(135deg,#2b2b2b,#8a8a8a)}.v8{background:linear-gradient(135deg,#355a12,#c2ec86)}
+
+/* pipeline board */
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:10px;overflow-x:auto;padding-bottom:10px}
+.col{background:var(--card);border:1px solid var(--hair);border-radius:var(--r-lg);padding:10px;display:flex;flex-direction:column;gap:6px;min-height:260px}
+.col-head{display:flex;align-items:center;gap:8px;padding:6px 6px 6px;font-size:13px;font-weight:600}.col-head .cnt{margin-left:auto;font-size:12px;color:var(--muted);background:var(--panel);padding:1px 8px;border-radius:99px}
+.pcard{background:var(--panel);border-radius:14px;padding:9px;cursor:pointer;display:flex;gap:10px;align-items:center}.pcard:hover{background:var(--card-2);outline:1px solid var(--hair-strong)}
+.pcard .th{width:42px;height:42px;border-radius:10px;flex:none}.pcard .t{font-size:12.5px;font-weight:600;line-height:1.25}.pcard .s{font-size:11px;color:var(--muted)}
+
+/* approvals + briefings */
+.appr{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:var(--card);border:1px solid var(--hair);border-radius:var(--r-md);padding:12px 16px;margin-bottom:8px;cursor:pointer}
+.appr:hover{border-color:var(--accent-2)}.appr .th{width:48px;height:48px;border-radius:12px}.appr .t{font-weight:600;font-size:14px}.appr .s{font-size:12.5px;color:var(--muted)}
+.brief{font-size:13.5px;line-height:1.55;background:var(--panel);border-radius:var(--r-md);padding:16px}
+.brief h4{margin:12px 0 4px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-deep)}.brief h4:first-child{margin-top:0}.brief ul{margin:0;padding-left:18px}.brief li{margin-bottom:2px}
+.steps{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-bottom:14px}
+.steps div{background:var(--panel);border-radius:8px;padding:6px 4px;font-size:10px;text-align:center;color:var(--faint);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.steps div.done{background:var(--accent-soft);color:var(--accent-deep)}.steps div.cur{background:var(--accent-deep);color:#fff}.steps div.bad{background:var(--rose-bg);color:var(--rose)}
+@media(max-width:720px){.steps{grid-template-columns:repeat(4,1fr)}}
+.cmts{display:flex;flex-direction:column;gap:8px}
+.cmt{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 12px;border-radius:14px;background:var(--panel);font-size:13px}
+.cmt.kunde{background:var(--warn-bg)}.cmt.ai{background:var(--accent-soft)}.cmt b{display:block;font-size:12px;font-weight:600}.cmt small{color:var(--faint);font-size:11px;margin-left:6px}
+.cmt-in{display:flex;gap:8px;margin-top:10px}.cmt-in input{flex:1;height:42px;padding:0 14px;border-radius:99px;border:1px solid var(--hair-strong);background:var(--card);outline:0;min-width:0;color:var(--ink)}
+.matrix td,.matrix th{text-align:center}.matrix td:first-child,.matrix th:first-child{text-align:left}.matrix input{accent-color:var(--accent-deep);width:16px;height:16px}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:40;display:none;backdrop-filter:blur(2px)}.scrim.open{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(580px,100%);background:var(--card);z-index:50;transform:translateX(102%);transition:transform .35s var(--ease);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-right:env(safe-area-inset-right,0px)}
+.drawer.open{transform:none}
+.drawer .dhd{display:flex;align-items:flex-start;gap:12px;padding:18px 22px;border-bottom:1px solid var(--hair)}.drawer .dhd h2{font-size:19px}.drawer .dhd .s{font-size:12.5px;color:var(--muted)}
+.drawer .body{padding:20px 22px;overflow:auto;flex:1}.drawer .foot{padding:14px 22px;border-top:1px solid var(--hair);display:flex;gap:8px;flex-wrap:wrap}
+.pv{aspect-ratio:4/5;max-height:300px;border-radius:var(--r-md);display:flex;align-items:flex-end;padding:14px;color:#fff;font-weight:600;font-size:18px;text-shadow:0 1px 6px #0009;margin-bottom:14px;position:relative}
+.pv.reel{aspect-ratio:9/16;max-height:300px;width:170px}.pv .tp{position:absolute;top:10px;right:10px;font-size:11px;padding:2px 9px;border-radius:99px;background:#0008}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:13.5px}.kv span{color:var(--muted)}
+.modal{position:fixed;inset:0;z-index:50;display:none;place-items:center;padding:16px}.modal.open{display:grid}
+.modal .box{background:var(--card);border-radius:var(--r-xl);box-shadow:var(--shadow-pop);width:min(560px,100%);max-height:calc(100% - 32px);overflow:auto;padding:24px}
+.modal h2{font-size:20px;margin-bottom:16px}.modal .mf{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.demo{font-size:11.5px;color:var(--faint);text-align:center;margin-top:24px}
+.alert{display:flex;gap:10px;align-items:center;padding:12px 16px;border-radius:var(--r-md);background:var(--warn-bg);color:var(--warn);font-weight:600;font-size:13.5px;margin-bottom:var(--gap)}.alert .link{margin-left:auto;color:var(--warn)}
+@media(max-width:1000px){.shell{grid-template-columns:1fr}.side{position:sticky;top:env(safe-area-inset-top,0px);height:auto;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;align-items:center;gap:4px;padding:10px 12px;z-index:25;scrollbar-width:none}.side .sec,.side .rolepill,.side .foot,.side .lbl span,.side .brand small{display:none}.side a,.side button.nv{width:auto;padding:8px 12px;border-radius:99px}.side .ic{display:none}.side .lbl b{font-size:13px;white-space:nowrap}.main{padding:0 max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}.topbar{margin:0 -16px 8px;padding:0 16px;height:60px}}
+</style>
+<!-- LOGIN / ROLLENWAHL -->
+</head>
+<body>
+<section id="login">
+  <div class="login-box">
+    <div class="brand"><span class="mark">W</span><span>WEMEDIA<small>COCKPIT · CREATE · ADVERTISE · PERFORM</small></span></div>
+    <p>Ein Login, ein Dashboard – jede Rolle sieht nur ihre Module. Demo: Rolle wählen.</p>
+    <div class="roles" id="roles"></div>
+    <p class="demo">Später: Login per E-Mail (Magic Link) · Rollen & Modulrechte verwaltet der Super-Admin unter „Team“.</p>
+  </div>
+</section>
+
+<!-- APP -->
+<div id="app" hidden><div class="shell">
+<aside class="side">
+  <a class="brand" href="#home"><span class="mark">W</span><span>WEMEDIA<small>CREATE · ADVERTISE · PERFORM</small></span></a>
+  <div class="rolepill" id="rolepill">Superadmin</div>
+  <nav id="nav" style="display:contents"></nav>
+  <div class="foot"><span class="avatar sm" id="side-av">CK</span><span id="side-name">Camillo</span><button class="btn ghost sm" id="logout" style="margin-left:auto;color:#ffffffb3">Wechseln</button></div>
+</aside>
+<main class="main">
+<div class="topbar">
+  <div class="crumb">Cockpit<span>/</span><b id="crumb">Übersicht</b></div>
+  <div class="spacer"></div>
+  <div class="search" id="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" placeholder="Suchen … Kunden, Beiträge" autocomplete="off"><kbd>⌘K</kbd><div class="search-pop" id="search-pop"></div></div>
+  <button class="btn primary" id="top-cta" data-open="post"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Neuer Beitrag</button>
+  <button class="icon-btn" id="notif-btn" title="Benachrichtigungen"><svg class="i" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span class="dot" id="notif-n">3</span></button>
+  <div class="who" id="who"></div>
+  <button class="icon-btn" id="theme-btn" title="Theme"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+</div>
+  <!-- HOME -->
+  <section class="view" id="v-home">
+    <div class="hero">
+      <div><div class="pills"><span id="home-eyebrow">Übersicht</span><span>Sonntag, 18. Oktober</span></div><h1 id="home-title">Guten Tag</h1><p id="home-sub">Alle Module auf einen Blick.</p><div class="actions"><button class="btn primary" data-go="social:freigaben">Freigaben prüfen <span class="arr"><svg class="i" viewBox="0 0 24 24"><path d="M7 17L17 7M8 7h9v9"/></svg></span></button><button class="btn" data-go="social:plan">Redaktionspläne <span class="arr" style="background:#ffffff26"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button></div></div>
+      <div class="side-box" id="home-side"></div>
+    </div>
+    <div class="alert" id="home-alert"></div>
+    <div class="grid g-4" style="margin-bottom:var(--gap)" id="home-kpis"></div>
+    <div class="section-title">Module</div>
+    <div class="grid g-3" id="mods"></div>
+    <div class="grid g-12" style="margin-top:var(--gap)">
+      <div class="card c-7"><div class="card-head"><h2>Was heute ansteht</h2></div><div class="row-list" id="home-today"></div></div>
+      <div class="card c-5"><div class="card-head"><h2>Agenten-Status</h2><span class="pill acc">4 Agenten</span></div><div class="row-list" id="home-agents"></div></div>
+    </div>
+  </section>
+
+  <!-- SOCIAL -->
+  <section class="view" id="v-social">
+    <div class="page-head">
+      <div><div class="eyebrow">Modul · Social Media</div><h1>Social Media Management</h1><p>Redaktionspläne, Freigaben und Briefings für alle betreuten Kunden.</p></div>
+      <div class="actions"><button class="btn" id="btn-brief-all"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4z"/></svg>KI-Briefings erstellen</button><button class="btn primary" data-open="post"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Neuer Beitrag</button></div>
+    </div>
+    <div class="toolbar"><div class="tabs" id="so-tabs"><button data-t="kunden" class="active">Kunden</button><button data-t="plan">Redaktionsplan</button><button data-t="pipeline">Produktion</button><button data-t="freigaben">Freigaben <span class="pill warn" id="so-fg-n">0</span></button><button data-t="briefings">Briefings</button></div><div id="so-tool-right"></div></div>
+    <div id="so-kunden"><div class="grid g-4" style="margin-bottom:var(--gap)" id="so-kpis"></div><div class="client-grid" id="clients"></div></div>
+    <div id="so-plan" hidden>
+      <div class="toolbar"><div class="actions"><select class="sel" id="plan-client"></select><div class="tabs" id="plan-month"><button data-m="2026-11" class="active">November 2026</button><button data-m="2026-12">Dezember 2026</button></div></div><div class="tabs" id="plan-mode"><button data-v="cal" class="active">Kalender</button><button data-v="ig">Instagram-Vorschau</button><button data-v="list">Liste</button></div></div>
+      <div class="grid g-12">
+        <div class="c-9" id="plan-main"></div>
+        <div class="c-3"><div class="card"><div class="card-head"><h2>Planungsstand</h2></div><div id="plan-stat"></div></div></div>
+      </div>
+    </div>
+    <div id="so-pipeline" hidden><div class="board" id="so-board"></div></div>
+    <div id="so-freigaben" hidden><div class="grid g-12"><div class="c-8" id="fg-list"></div><div class="c-4"><div class="card"><div class="card-head"><h2>Freigabe-Flow</h2></div><div class="row-list" id="fg-flow"></div></div></div></div></div>
+    <div id="so-briefings" hidden><div class="grid g-12"><div class="c-5"><div class="card"><div class="card-head"><div><h2>Briefing-Generator</h2><div class="sub">Für das Content-Team · läuft über den KI-Agenten</div></div></div><div class="field"><label>Beitrag</label><select id="br-post"></select></div><div class="field"><label>Zusätzliche Hinweise</label><textarea id="br-notes" placeholder="z. B. Fokus auf neues Studio, Herbstlicht, kein Stockmaterial"></textarea></div><button class="btn primary" id="br-gen">Briefing generieren</button></div></div><div class="c-7"><div class="card"><div class="card-head"><h2>Briefing</h2><span class="pill acc" id="br-status">Noch keins erzeugt</span></div><div id="br-out" class="brief" style="color:var(--faint)">Beitrag wählen und generieren – das Briefing geht an Content-Team, Grafiker und in den Beitrag.</div></div></div></div></div>
+  </section>
+
+  <!-- KUNDENPORTAL -->
+  <section class="view" id="v-portal">
+    <div class="page-head"><div><div class="eyebrow">Kundenportal</div><h1 id="po-title">Ihre Beiträge</h1><p>So sieht Ihr Feed in den nächsten Wochen aus. Beitrag antippen, freigeben oder Änderung anfragen.</p></div><div class="actions"><span class="pill warn" id="po-open">0 offen</span></div></div>
+    <div class="grid g-12">
+      <div class="c-5"><div class="ig" id="po-ig"></div></div>
+      <div class="c-7"><div class="card"><div class="card-head"><h2>Zur Freigabe</h2></div><div id="po-list"></div></div></div>
+    </div>
+  </section>
+
+  <!-- GRAFIK -->
+  <section class="view" id="v-grafik">
+    <div class="page-head"><div><div class="eyebrow">Modul · Grafik & Content</div><h1>Produktions-Queue</h1><p>Briefings vom Social-Media-Team – fertig markieren, dann geht es automatisch in die Prüfung.</p></div></div>
+    <div class="grid g-12"><div class="c-8" id="gr-list"></div><div class="c-4"><div class="card kpi"><div class="k">Offen in Produktion</div><div class="v num" id="gr-n">0</div><div class="d">Creatives, die der Grafik-Agent vorbereitet hat, erscheinen hier als Entwurf.</div></div></div></div>
+  </section>
+
+  <!-- CRM / PERFORMANCE / FINANZEN placeholders -->
+  <section class="view" id="v-crm"><div class="page-head"><div><div class="eyebrow">Modul · CRM</div><h1>Sales CRM</h1><p>Lead-Funnel, Pipeline und KI-Sales-Agent – läuft als eigenes Modul.</p></div><div class="actions"><a class="btn primary" href="https://wemedia-crm.vercel.app" target="_blank" rel="noopener">CRM öffnen ↗</a></div></div><div class="grid g-4" id="crm-kpis"></div></section>
+  <section class="view" id="v-performance"><div class="page-head"><div><div class="eyebrow">Modul · Performance</div><h1>Performance Marketing</h1><p>Meta & Google Ads pro Kunde – der Performance-Agent übernimmt Reporting und Optimierungsvorschläge.</p></div><span class="pill">Nächstes Modul</span></div><div class="grid g-4" id="pf-kpis"></div></section>
+  <section class="view" id="v-finanzen"><div class="page-head"><div><div class="eyebrow">Modul · Finanzen</div><h1>Finanz-Cockpit</h1><p>Retainer, MRR, Auslastung – nur Geschäftsführung.</p></div><div class="actions"><a class="btn primary" href="https://cockpit.wemedia.at" target="_blank" rel="noopener">Finanz-Cockpit öffnen ↗</a></div></div></section>
+
+  <!-- TEAM -->
+  <section class="view" id="v-team">
+    <div class="page-head"><div><div class="eyebrow">Super-Admin</div><h1>Team & Rollen</h1><p>Wer hat Zugang zu welchem Modul. Kunden sehen nur ihr eigenes Portal.</p></div><div class="actions"><button class="btn primary" data-open="user"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Benutzer einladen</button></div></div>
+    <div class="table-wrap matrix"><table id="team-tbl"></table></div>
+    <p class="demo">Demo-Daten (fiktive Kunden) · WEMEDIA GmbH, Wien</p>
+  </section>
+</main>
+</div></div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer">
+  <div class="dhd"><div style="flex:1;min-width:0"><h2 id="dr-title">—</h2><div class="s" id="dr-sub"></div></div><button class="icon-btn" id="dr-close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="body" id="dr-body"></div>
+  <div class="foot" id="dr-foot"></div>
+</aside>
+<div class="modal" id="m-post"><div class="box"><h2>Neuer Beitrag</h2>
+  <div class="f-row"><div class="field"><label>Kunde</label><select id="np-client"></select></div><div class="field"><label>Format</label><select id="np-type"><option>Feed</option><option>Reel</option><option>Carousel</option><option>Story</option></select></div></div>
+  <div class="field"><label>Thema / Titel</label><input id="np-title" placeholder="z. B. Neue Winterkarte"></div>
+  <div class="f-row"><div class="field"><label>Datum</label><input id="np-date" type="date" value="2026-11-20"></div><div class="field"><label>Plattform</label><select id="np-pf"><option>Instagram</option><option>Facebook</option><option>Instagram + Facebook</option><option>TikTok</option><option>LinkedIn</option></select></div></div>
+  <div class="field"><label>Caption (Entwurf)</label><textarea id="np-cap"></textarea></div>
+  <div class="mf"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="np-save">Anlegen</button></div></div></div>
+<div class="modal" id="m-user"><div class="box"><h2>Benutzer einladen</h2>
+  <div class="f-row"><div class="field"><label>Name</label><input id="nu-name"></div><div class="field"><label>E-Mail</label><input id="nu-email" type="email"></div></div>
+  <div class="field"><label>Rolle</label><select id="nu-role"></select></div>
+  <div class="mf"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="nu-save">Einladung senden</button></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const TODAY='2026-10-18';
+const MODULES=[
+  {id:'home',sub:'Ihr Start',name:'Übersicht',icon:'<svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',desc:'Alle Module, KPIs und Agenten auf einen Blick.'},
+  {id:'crm',sub:'Leads & Pipeline',name:'CRM',icon:'<svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="4" height="16" rx="1"/><rect x="10" y="4" width="4" height="11" rx="1"/><rect x="17" y="4" width="4" height="7" rx="1"/></svg>',desc:'Leads, Pipeline, Setter/Closer, KI-Sales-Agent.',ext:'crm.wemedia.at'},
+  {id:'social',sub:'Redaktion & Freigaben',name:'Social Media',icon:'<svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>',desc:'Redaktionspläne, Kundenfreigaben, Briefings.',ext:'socialmedia.wemedia.at'},
+  {id:'grafik',sub:'Produktions-Queue',name:'Grafik & Content',icon:'<svg class="i" viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.6 7.6"/></svg>',desc:'Produktions-Queue, Creatives vom Grafik-Agenten.'},
+  {id:'performance',sub:'Ads & Reporting',name:'Performance',icon:'<svg class="i" viewBox="0 0 24 24"><path d="M3 20h18M5 16l4-5 4 3 6-8"/></svg>',desc:'Meta & Google Ads, Reporting, Performance-Agent.',soon:true},
+  {id:'finanzen',sub:'Retainer & MRR',name:'Finanzen',icon:'<svg class="i" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>',desc:'Retainer, MRR, Auslastung.',ext:'cockpit.wemedia.at'},
+  {id:'portal',sub:'Kundenansicht',name:'Kundenportal',icon:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',desc:'Was der Kunde sieht: Feed-Vorschau & Freigaben.'},
+  {id:'team',sub:'Benutzer & Rechte',name:'Team & Rollen',icon:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',desc:'Benutzer, Rollen, Modulrechte.'}
+];
+const ROLES={
+  admin:{name:'Super-Admin',mods:['home','crm','social','grafik','performance','finanzen','portal','team'],desc:'Geschäftsführung – sieht alles, verwaltet Team & Rechte'},
+  sales:{name:'Setter / Closer',mods:['home','crm'],desc:'Nur CRM: Leads, Calls, KI-Sales-Agent'},
+  smm:{name:'Social Media Manager:in',mods:['home','social','grafik','portal'],desc:'Redaktionspläne, Freigaben, Briefings'},
+  grafik:{name:'Grafiker:in',mods:['home','grafik'],desc:'Produktions-Queue & Briefings'},
+  kunde:{name:'Kunde',mods:['portal'],desc:'Eigener Feed, Freigaben, Kommentare'}
+};
+const USERS=[
+  {id:'CK',name:'Camillo Köstler',email:'camillo.koestler@wemedia.at',role:'admin'},
+  {id:'ME',name:'Meryem Reischer',email:'meryem@wemedia.at',role:'smm'},
+  {id:'DA',name:'David',email:'david@wemedia.at',role:'sales'},
+  {id:'PA',name:'Patrick',email:'patrick@wemedia.at',role:'grafik'},
+  {id:'LH',name:'Lena Huber',email:'lena@studiofit-graz.at',role:'kunde',client:1}
+];
+const CLIENTS=[
+  {id:1,name:'Studio Fit Graz',handle:'studiofit.graz',branche:'Fitness',pf:['IG','FB'],soll:12,smm:'ME',gr:'PA',followers:'4.812',v:1},
+  {id:2,name:'Zahnzentrum Donaustadt',handle:'zahnzentrum.donaustadt',branche:'Ärzte & Praxen',pf:['IG','FB'],soll:8,smm:'ME',gr:'PA',followers:'1.930',v:2},
+  {id:3,name:'Café Morgenrot',handle:'cafe.morgenrot',branche:'Gastro',pf:['IG'],soll:12,smm:'ME',gr:'PA',followers:'6.204',v:4},
+  {id:4,name:'Autohaus Steinbach',handle:'autohaus.steinbach',branche:'Automotive',pf:['IG','FB','TikTok'],soll:10,smm:'ME',gr:'PA',followers:'3.117',v:7},
+  {id:5,name:'Velora Cosmetics',handle:'velora.cosmetics',branche:'E-Commerce',pf:['IG','TikTok'],soll:16,smm:'ME',gr:'PA',followers:'12.480',v:3},
+  {id:6,name:'Alpenhof Hotels',handle:'alpenhof.hotels',branche:'Gastro',pf:['IG','FB'],soll:12,smm:'ME',gr:'PA',followers:'9.871',v:6},
+  {id:7,name:'Elektro Wimmer',handle:'elektro.wimmer',branche:'Handwerk',pf:['IG','FB','LinkedIn'],soll:6,smm:'ME',gr:'PA',followers:'812',v:8},
+  {id:8,name:'CrossBox Salzburg',handle:'crossbox.salzburg',branche:'Fitness',pf:['IG'],soll:12,smm:'ME',gr:'PA',followers:'5.330',v:5},
+  {id:9,name:'Physio Aktiv Wien',handle:'physio.aktiv.wien',branche:'Ärzte & Praxen',pf:['IG','FB'],soll:8,smm:'ME',gr:'PA',followers:'2.244',v:6},
+  {id:10,name:'Lumen Optik',handle:'lumen.optik',branche:'E-Commerce',pf:['IG','FB'],soll:10,smm:'ME',gr:'PA',followers:'7.015',v:2},
+  {id:11,name:'Bäckerei Hofbauer',handle:'hofbauer.brot',branche:'Gastro',pf:['IG','FB'],soll:8,smm:'ME',gr:'PA',followers:'3.602',v:4},
+  {id:12,name:'Werkstatt Novak',handle:'werkstatt.novak',branche:'Automotive',pf:['IG','FB'],soll:8,smm:'ME',gr:'PA',followers:'1.455',v:7}
+];
+const STATUS=[['konzept','Konzept'],['briefing','Briefing'],['produktion','In Produktion'],['intern','Interne Prüfung'],['freigabe','Kundenfreigabe'],['freigegeben','Freigegeben'],['geplant','Geplant'],['live','Live']];
+const SN=Object.fromEntries(STATUS);
+// seed posts (Nov/Dez 2026) — client 1 fully detailed, others sketched
+const TOPICS={1:['Neues Kursprogramm Winter','Mitglied des Monats','5 Tipps gegen Rückenschmerzen','Reel: Morning Routine','Black-Friday-Aktion','Trainer-Vorstellung: Jonas','Carousel: Geräte-Guide','Story-Serie: Challenge Woche 1','Reel: Transformation','Öffnungszeiten Feiertage','Jahresrückblick','Neujahrs-Angebot'],
+ 2:['Zahnhygiene im Winter','Team-Vorstellung','Reel: Praxisrundgang','Carousel: Bleaching FAQ','Weihnachtsgrüße','Öffnungszeiten'],
+ 3:['Winterkarte','Reel: Latte Art','Brunch-Wochenende','Adventkalender Tag 1','Glühweinabend','Silvester-Brunch'],
+ 4:['Winterreifen-Check','Reel: Werkstatt-Insights','Neuwagen Highlight','Carousel: Finanzierung','Weihnachtsaktion','Jahresabschluss'],
+ 5:['Produkt-Launch Serum','Reel: Routine','UGC Review','Black Friday','Gift Guide','Carousel: Inhaltsstoffe','Adventkalender','Jahresrückblick'],
+ 6:['Winterwandern','Spa-Weekend','Reel: Frühstücksbuffet','Weihnachtsmarkt','Silvester-Gala','Neujahrs-Special'],
+ 7:['PV-Anlage Referenz','Lehrlinge gesucht','Smart-Home Tipp'],
+ 8:['Open Gym Samstag','Reel: WOD','Mitglied des Monats','Challenge','Weihnachts-WOD','Jahresabschluss'],
+ 9:['Übung der Woche','Team-Vorstellung','Reel: Behandlung','Winter-Tipps'],
+ 10:['Brillen-Trend Winter','Reel: Sehtest','Gutschein-Aktion','Carousel: Gleitsicht','Weihnachtsgeschenk'],
+ 11:['Striezel-Saison','Reel: Backstube 4 Uhr','Adventkalender','Weihnachtsbäckerei'],
+ 12:['Wintercheck','Reel: Reifenwechsel','Lehrling des Monats','Weihnachtsgrüße']};
+function seedPosts(){
+  const out=[];let id=1;
+  CLIENTS.forEach(c=>{const t=TOPICS[c.id];const n=t.length;
+    t.forEach((title,i)=>{const dec=i>=Math.ceil(n*0.6);const day=dec?2+Math.floor((i-Math.ceil(n*0.6))*(26/Math.max(1,n-Math.ceil(n*0.6))))+1:2+Math.floor(i*(26/Math.ceil(n*0.6)));
+      const date=`2026-${dec?'12':'11'}-${String(Math.min(28,day)).padStart(2,'0')}`;
+      const type=/Reel/.test(title)?'Reel':/Carousel/.test(title)?'Carousel':/Story/.test(title)?'Story':'Feed';
+      const stIdx=dec?Math.min(i%3,1):Math.min(7,2+((i*7+c.id)%6));
+      const st=STATUS[stIdx][0];
+      out.push({id:id++,client:c.id,title:title.replace(/^(Reel|Carousel|Story):\s*/,''),type,date,pf:c.pf.includes('FB')?'Instagram + Facebook':'Instagram',status:st,v:((c.v+i)%8)+1,
+        caption:captionFor(c,title),hashtags:'#'+c.handle.replace('.','')+' #'+c.branche.toLowerCase().replace(/[^a-zäöü]/g,'')+' #wien #'+(c.branche==='Fitness'?'training':c.branche==='Gastro'?'genuss':'tipps'),
+        comments:st==='freigabe'&&i%2===0?[{who:'Kunde',text:'Passt gut – können wir das Logo etwas größer machen?',at:'Gestern 18:40'}]:[]});
+    })});
+  out[3].status='aenderung';out[3].comments=[{who:'Kunde',text:'Bitte das Bild vom Kursraum verwenden, nicht die Hantelbank. Text passt.',at:'Heute 09:12'}];
+  return out;
+}
+function captionFor(c,t){return `${t.replace(/^(Reel|Carousel|Story):\s*/,'')} bei ${c.name} ✨ Alle Infos im Link in der Bio. Wir freuen uns auf euch!`}
+
+const KEY='wemedia-cockpit-v1';let S;
+function load(){try{const r=localStorage.getItem(KEY);if(r){S=JSON.parse(r);return}}catch(e){}S={posts:seedPosts(),users:USERS,access:Object.fromEntries(Object.entries(ROLES).map(([k,v])=>[k,v.mods.slice()])),role:null,theme:'dark',briefs:{}}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+load();
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cl=id=>CLIENTS.find(c=>c.id==id);const post=id=>S.posts.find(p=>p.id==id);
+const dDE=(iso,o={day:'numeric',month:'short'})=>new Date(iso+'T12:00').toLocaleDateString('de-AT',o);
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),2400)}
+const stPill=s=>({konzept:'',briefing:'violet',produktion:'blue',intern:'warn',freigabe:'warn',aenderung:'rose',freigegeben:'acc',geplant:'acc',live:'good'})[s]||'';
+const stName=s=>s==='aenderung'?'Änderung angefragt':SN[s];
+const me=()=>S.role?{...ROLES[S.role],id:S.role,user:S.users.find(u=>u.role===S.role)||S.users[0]}:null;
+const myClient=()=>S.role==='kunde'?(S.users.find(u=>u.role==='kunde')?.client||1):null;
+const openPosts=()=>S.posts.filter(p=>!['live'].includes(p.status));
+
+// ---------- login ----------
+function rLogin(){$('#roles').innerHTML=Object.entries(ROLES).map(([k,r])=>{const u=S.users.find(x=>x.role===k);return `<button class="role ${k==='admin'?'admin':''}" data-role="${k}"><span class="avatar">${u?u.id:'?'}</span><b>${r.name}</b><span>${u?esc(u.name):''}</span><span>${r.desc}</span><div class="mods">${S.access[k].filter(m=>m!=='home').map(m=>`<i>${MODULES.find(x=>x.id===m).name}</i>`).join('')}</div></button>`}).join('')}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-role]');if(b){S.role=b.dataset.role;save();enter()}});
+function enter(){$('#login').hidden=true;$('#app').hidden=false;const m=me();$('#who').innerHTML=`<span class="avatar sm">${m.user.id}</span><div><b>${esc(m.user.name)}</b><span>${m.name}</span></div>`;$('#rolepill').textContent=m.name;$('#side-av').textContent=m.user.id;$('#side-name').textContent=m.user.name.split(' ')[0];$('#top-cta').hidden=!S.access[S.role].includes('social');
+  const groups=[['Arbeitsbereich',['home','crm','social','grafik','performance']],['Verwaltung',['finanzen','portal','team']]];$('#nav').innerHTML=groups.map(g=>{const its=g[1].filter(id=>S.access[S.role].includes(id));return its.length?`<div class="sec">${g[0]}</div>`+its.map(id=>{const x=MODULES.find(m=>m.id===id);return `<button class="nv" data-v="${x.id}"><span class="ic">${x.icon}</span><span class="lbl"><b>${x.name}</b><span>${x.sub}</span></span>${x.id==='social'?`<span class="cnt" id="nav-fg">${S.posts.filter(p=>p.status==='freigabe').length}</span>`:''}</button>`}).join(''):''}).join('');
+  location.hash=S.access[S.role][0];route()}
+$('#logout').onclick=()=>{S.role=null;save();$('#app').hidden=true;$('#login').hidden=false;rLogin()};
+function route(){let h=(location.hash||'#home').slice(1).replace(/[^a-z]/g,'');if(!S.role){return}if(!S.access[S.role].includes(h))h=S.access[S.role][0];
+  $$('.view').forEach(v=>v.classList.toggle('active',v.id==='v-'+h));$$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===h));$('#crumb').textContent=(MODULES.find(x=>x.id===h)||{}).name;
+  document.title=(MODULES.find(x=>x.id===h)||{}).name+' · WEMEDIA Cockpit';({home:rHome,social:rSocial,portal:rPortal,grafik:rGrafik,team:rTeam,crm:rCrm,performance:rPerf,finanzen:()=>{}})[h]();window.scrollTo({top:0})}
+window.addEventListener('hashchange',route);
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(b)location.hash=b.dataset.v});$('#notif-btn').onclick=()=>toast('3 neue: Studio Fit Graz Änderung · 6 Beiträge in Kundenfreigabe · Content-Agent hat 7 Briefings erzeugt');
+
+// ---------- home ----------
+function rHome(){const m=me();const fg=S.posts.filter(p=>p.status==='freigabe').length,ae=S.posts.filter(p=>p.status==='aenderung').length,pr=S.posts.filter(p=>['briefing','produktion'].includes(p.status)).length;
+  const low=CLIENTS.filter(c=>planned(c.id)<c.soll*0.5);
+  $('#home-title').textContent='Guten Tag, '+m.user.name.split(' ')[0]+'.';const tot=S.posts.filter(p=>p.date.startsWith('2026-11')).length,soll=CLIENTS.reduce((a,c)=>a+c.soll,0);$('#home-side').innerHTML=`<div class="lbl">Social Media · November</div><div class="v num">${tot} von ${soll} Beiträgen geplant</div><div class="s">${CLIENTS.length} Kunden · ${fg} in Freigabe · ${ae} Änderungen</div><div class="segs">${CLIENTS.slice(0,8).map(c=>`<i class="${planned(c.id)>=c.soll*0.8?'on':''}"></i>`).join('')}</div>`;$('#home-sub').textContent=m.id==='admin'?'Alle Module, Agenten und Kunden auf einen Blick.':`Deine Module: ${S.access[S.role].filter(x=>x!=='home').map(x=>MODULES.find(y=>y.id===x).name).join(', ')}.`;
+  const al=$('#home-alert');if(low.length&&S.access[S.role].includes('social')){al.hidden=false;al.innerHTML=`⚠ ${low.length} Kunden sind für November unter 50 % geplant: ${low.map(c=>c.name).join(', ')} <button class="link" data-go="social:kunden">Redaktionspläne →</button>`}else al.hidden=true;
+  const k=[['Beiträge in Kundenfreigabe',fg,'warten auf Rückmeldung','social'],['Änderungen angefragt',ae,'zurück an Grafik','social'],['In Produktion',pr,'Briefings beim Content-Team','grafik'],['Offene Deals im CRM',15,'€ 338,5k Pipeline','crm']];
+  $('#home-kpis').innerHTML=k.filter(x=>S.access[S.role].includes(x[3])).map(x=>`<div class="card kpi" data-go="${x[3]}" style="cursor:pointer"><span class="go">↗</span><div class="ic">${MODULES.find(m=>m.id===x[3]).icon}</div><div class="v num">${x[1]}</div><div class="k">${x[0]}</div><div class="d">${x[2]}</div></div>`).join('');
+  $('#mods').innerHTML=MODULES.filter(x=>x.id!=='home').map(x=>{const ok=S.access[S.role].includes(x.id);return `<div class="card mod ${ok?'':'locked'} ${x.soon?'locked':''}" ${ok&&!x.soon?`data-go="${x.id}"`:''}><div class="ic">${x.icon}</div><h3>${x.name}</h3><p>${x.desc}</p><div class="st">${x.soon?'<span class="pill">In Planung</span>':ok?'<span class="pill good">Aktiv</span>':'<span class="pill">Kein Zugriff</span>'}${x.ext?`<span class="ext">${x.ext}</span>`:''}</div></div>`}).join('');
+  const today=[['Lumen Optik · Preisgespräch 14:30','CRM · Call mit KI-Agent','crm'],['Studio Fit Graz · Änderung vom Kunden','Social · Beitrag „Reel: Morning Routine“','social'],[`${fg} Beiträge warten auf Kundenfreigabe`,'Social · Erinnerung an Kunden senden','social'],['Café Morgenrot · 3 Briefings offen','Grafik · Winterkarte, Latte Art, Brunch','grafik']];
+  $('#home-today').innerHTML=today.filter(t=>S.access[S.role].includes(t[2])).map(t=>`<div class="row" data-go="${t[2]}"><span class="co">${t[2][0].toUpperCase()}</span><div><div class="t">${t[0]}</div><div class="s">${t[1]}</div></div><span class="r pill">→</span></div>`).join('')||'<div class="s" style="color:var(--faint)">Nichts offen.</div>';
+  $('#home-agents').innerHTML=[['Sales-Agent','4 Calls analysiert heute','good'],['Content-Agent','7 Briefings generiert','good'],['Grafik-Agent','3 Entwürfe in Queue','warn'],['Performance-Agent','Nächstes Modul','']].map(a=>`<div class="row"><span class="co" style="background:var(--accent-soft);color:var(--accent)">✦</span><div><div class="t">${a[0]}</div><div class="s">${a[1]}</div></div><span class="r pill ${a[2]}">${a[2]==='good'?'läuft':a[2]==='warn'?'arbeitet':'bald'}</span></div>`).join('')}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){const [v,t]=g.dataset.go.split(':');location.hash=v;if(t){soTab=t;setTimeout(rSocial,0)}}});
+function planned(cid,month='2026-11'){return S.posts.filter(p=>p.client==cid&&p.date.startsWith(month)&&p.status!=='konzept').length}
+
+// ---------- social ----------
+let soTab='kunden',planClient=1,planMonth='2026-11',planMode='cal';
+function rSocial(){$$('#so-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.t===soTab));['kunden','plan','pipeline','freigaben','briefings'].forEach(t=>$('#so-'+t).hidden=t!==soTab);
+  const fg=S.posts.filter(p=>p.status==='freigabe').length;$('#so-fg-n').textContent=fg;const nf=$('#nav-fg');if(nf)nf.textContent=fg;
+  ({kunden:rClients,plan:rPlan,pipeline:rBoard,freigaben:rFreigaben,briefings:rBriefings})[soTab]()}
+$('#so-tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b){soTab=b.dataset.t;rSocial()}});
+function rClients(){const tot=S.posts.filter(p=>p.date.startsWith('2026-11')).length,soll=CLIENTS.reduce((a,c)=>a+c.soll,0);
+  $('#so-kpis').innerHTML=[['Betreute Kunden',CLIENTS.length,'Social-Media-Retainer'],['November geplant',`${tot} / ${soll}`,'Beiträge Ist / Soll'],['In Kundenfreigabe',S.posts.filter(p=>p.status==='freigabe').length,'warten auf Rückmeldung'],['Änderungen offen',S.posts.filter(p=>p.status==='aenderung').length,'zurück an Grafik']].map(x=>`<div class="card kpi"><div class="k">${x[0]}</div><div class="v num">${x[1]}</div><div class="d">${x[2]}</div></div>`).join('');
+  $('#clients').innerHTML=CLIENTS.map(c=>{const n=planned(c.id),pct=Math.min(100,Math.round(n/c.soll*100)),fg=S.posts.filter(p=>p.client===c.id&&p.status==='freigabe').length,ae=S.posts.filter(p=>p.client===c.id&&p.status==='aenderung').length;
+    return `<div class="card cl" data-client="${c.id}"><div class="hd"><span class="co">${esc(c.name[0])}</span><div><b>${esc(c.name)}</b><span>${c.branche} · ${c.pf.join(' / ')}</span></div></div><div class="nums"><div><span>Nov. geplant</span><b class="num">${n}/${c.soll}</b></div><div><span>Freigabe</span><b class="num" style="color:${fg?'var(--warn)':'inherit'}">${fg}</b></div><div><span>Änderung</span><b class="num" style="color:${ae?'var(--rose)':'inherit'}">${ae}</b></div></div><div class="bar"><i class="${pct<50?'lo':pct<80?'mid':''}" style="width:${pct}%"></i></div><div class="plan"><span>Planung bis ${lastDate(c.id)}</span><span class="num">${pct} %</span></div></div>`}).join('')}
+function lastDate(cid){const d=S.posts.filter(p=>p.client==cid&&p.status!=='konzept').map(p=>p.date).sort().pop();return d?dDE(d):'—'}
+document.addEventListener('click',e=>{const c=e.target.closest('[data-client]');if(c){planClient=+c.dataset.client;soTab='plan';rSocial()}});
+function rPlan(){const sel=$('#plan-client');sel.innerHTML=CLIENTS.map(c=>`<option value="${c.id}" ${c.id===planClient?'selected':''}>${esc(c.name)}</option>`).join('');
+  $$('#plan-month button').forEach(b=>b.classList.toggle('active',b.dataset.m===planMonth));$$('#plan-mode button').forEach(b=>b.classList.toggle('active',b.dataset.v===planMode));
+  const c=cl(planClient),ps=S.posts.filter(p=>p.client===planClient&&p.date.startsWith(planMonth)).sort((a,b)=>a.date.localeCompare(b.date));
+  const main=$('#plan-main');
+  if(planMode==='cal'){const [y,m]=planMonth.split('-').map(Number);const first=new Date(y,m-1,1),dow=(first.getDay()+6)%7,days=new Date(y,m,0).getDate();let h='<div class="card"><div class="cal">'+['Mo','Di','Mi','Do','Fr','Sa','So'].map(d=>`<div class="dh">${d}</div>`).join('');
+    for(let i=0;i<dow;i++)h+='<div class="d off"></div>';
+    for(let d=1;d<=days;d++){const iso=`${planMonth}-${String(d).padStart(2,'0')}`;h+=`<div class="d ${iso===TODAY?'today':''}"><span class="n">${d}</span>${ps.filter(p=>p.date===iso).map(p=>`<div class="p s-${p.status}" data-post="${p.id}" title="${esc(p.title)} · ${stName(p.status)}">${p.type==='Reel'?'▶ ':''}${esc(p.title)}</div>`).join('')}</div>`}
+    main.innerHTML=h+'</div><div class="legend" style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px">'+STATUS.map(s=>`<span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;background:var(--${({konzept:'faint',briefing:'violet',produktion:'blue',intern:'warn',freigabe:'warn',freigegeben:'accent',geplant:'accent',live:'good'})[s[0]]})"></i>${s[1]}</span>`).join('')+'<span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;background:var(--rose)"></i>Änderung angefragt</span></div>'}
+  else if(planMode==='ig'){main.innerHTML=igProfile(c,S.posts.filter(p=>p.client===planClient).sort((a,b)=>b.date.localeCompare(a.date)),true)}
+  else{main.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Datum</th><th>Beitrag</th><th>Format</th><th>Plattform</th><th>Status</th><th>Kommentare</th></tr></thead><tbody>${ps.map(p=>`<tr data-post="${p.id}"><td class="num" style="color:var(--muted)">${dDE(p.date,{weekday:'short',day:'numeric',month:'short'})}</td><td><b>${esc(p.title)}</b></td><td>${p.type}</td><td style="color:var(--muted)">${p.pf}</td><td><span class="pill ${stPill(p.status)}">${stName(p.status)}</span></td><td class="num">${p.comments.length||'—'}</td></tr>`).join('')}</tbody></table></div>`}
+  const n=ps.filter(p=>p.status!=='konzept').length,pct=Math.min(100,Math.round(n/c.soll*100));
+  const by=s=>ps.filter(p=>p.status===s).length;
+  $('#plan-stat').innerHTML=`<div class="kpi"><div class="v num">${n}<small style="font-size:14px;color:var(--muted);font-weight:600"> / ${c.soll} Soll</small></div></div><div class="bar" style="margin:8px 0 14px"><i class="${pct<50?'lo':pct<80?'mid':''}" style="width:${pct}%"></i></div><div class="kv">${STATUS.map(s=>`<span>${s[1]}</span><b class="num">${by(s[0])}</b>`).join('')}<span style="color:var(--rose)">Änderung angefragt</span><b class="num">${by('aenderung')}</b></div><div class="section-title">Team</div><div class="kv"><span>SMM</span><b>Meryem</b><span>Grafik</span><b>Patrick</b><span>Freigabe durch</span><b>${esc(S.users.find(u=>u.client===c.id)?.name||'Kunde')}</b></div>`}
+$('#plan-client').addEventListener('change',e=>{planClient=+e.target.value;rPlan()});
+$('#plan-month').addEventListener('click',e=>{const b=e.target.closest('button');if(b){planMonth=b.dataset.m;rPlan()}});
+$('#plan-mode').addEventListener('click',e=>{const b=e.target.closest('button');if(b){planMode=b.dataset.v;rPlan()}});
+function igProfile(c,ps,internal){const st=p=>p.status==='live'||p.status==='geplant'||p.status==='freigegeben'?'ok':p.status==='aenderung'?'bad':p.status==='freigabe'?'':'grey';
+  return `<div class="ig"><div class="ph"><div class="av"><div>${esc(c.name[0])}</div></div><div class="stats"><div><b class="num">${ps.length}</b><span>Beiträge</span></div><div><b class="num">${c.followers}</b><span>Follower</span></div><div><b class="num">${Math.round(ps.length*0.6)}</b><span>Gefolgt</span></div></div></div><div class="bio"><b>${esc(c.name)}</b>@${c.handle} · ${c.branche}<br>Geplanter Feed – neueste Beiträge zuerst.</div><div class="igtabs"><span class="on">▦ BEITRÄGE</span><span>▶ REELS</span><span>◎ MARKIERT</span></div><div class="iggrid">${ps.map(p=>`<div class="tile v${p.v}" data-post="${p.id}"><i class="stx ${st(p)}" title="${stName(p.status)}"></i><span class="tp">${p.type==='Reel'?'▶':p.type==='Carousel'?'▣':p.type==='Story'?'◷':dDE(p.date)}</span><span>${esc(p.title)}</span></div>`).join('')}</div></div>`}
+function rBoard(){const cols=STATUS.map(s=>s[0]);cols.splice(5,0,'aenderung');
+  $('#so-board').innerHTML=cols.map(s=>{const ps=S.posts.filter(p=>p.status===s).sort((a,b)=>a.date.localeCompare(b.date));return `<div class="col"><div class="col-head"><span class="pill ${stPill(s)}" style="font-size:10px">${stName(s)}</span><span class="cnt">${ps.length}</span></div>${ps.slice(0,12).map(p=>`<div class="pcard" data-post="${p.id}"><div class="th v${p.v}"></div><div style="min-width:0"><div class="t">${esc(p.title)}</div><div class="s">${esc(cl(p.client).name)} · ${dDE(p.date)}</div></div></div>`).join('')}${ps.length>12?`<div class="s" style="font-size:12px;color:var(--faint);padding:4px 6px">+ ${ps.length-12} weitere</div>`:''}</div>`}).join('')}
+function rFreigaben(){const ps=S.posts.filter(p=>['freigabe','aenderung'].includes(p.status)).sort((a,b)=>(a.status==='aenderung'?0:1)-(b.status==='aenderung'?0:1)||a.date.localeCompare(b.date));
+  $('#fg-list').innerHTML=ps.map(p=>`<div class="appr" data-post="${p.id}"><div class="th v${p.v}"></div><div><div class="t">${esc(cl(p.client).name)} · ${esc(p.title)}</div><div class="s">${p.type} · geplant ${dDE(p.date)} · ${p.comments.length?p.comments.length+' Kommentar'+(p.comments.length>1?'e':''):'kein Kommentar'}${p.status==='freigabe'?' · seit 2 Tagen offen':''}</div></div><span class="pill ${stPill(p.status)}">${stName(p.status)}</span></div>`).join('')||'<div class="card" style="color:var(--faint)">Alles freigegeben.</div>';
+  $('#fg-flow').innerHTML=[['1','SMM sendet Beitrag zur Freigabe','Kunde bekommt E-Mail + Portal-Link'],['2','Kunde gibt frei oder kommentiert','direkt im Kundenportal, kein ClickUp mehr'],['3','Änderung → automatisch zurück an Grafik','mit Kundenkommentar als Briefing-Zusatz'],['4','Freigegeben → Geplant','Posting-Termin fix, Veröffentlichung über Meta']].map(f=>`<div class="row"><span class="co" style="background:var(--accent-soft);color:var(--accent)">${f[0]}</span><div><div class="t">${f[1]}</div><div class="s">${f[2]}</div></div></div>`).join('')}
+function rBriefings(){const sel=$('#br-post');sel.innerHTML=S.posts.filter(p=>['konzept','briefing','aenderung'].includes(p.status)).sort((a,b)=>a.date.localeCompare(b.date)).map(p=>`<option value="${p.id}">${esc(cl(p.client).name)} · ${esc(p.title)} (${dDE(p.date)})</option>`).join('')}
+function briefingFor(p,notes){const c=cl(p.client);const fmt={Feed:'1080×1350 px (4:5), statisch, 1 Motiv',Reel:'1080×1920 px (9:16), 15–30 s, Untertitel einbrennen, Hook in den ersten 2 s',Carousel:'1080×1350 px (4:5), 5–7 Slides, Slide 1 = Hook, letzte Slide = CTA',Story:'1080×1920 px (9:16), 3–5 Frames, Sticker/Umfrage auf Frame 2'}[p.type];
+  const kc=p.comments.filter(x=>x.who==='Kunde').map(x=>x.text);
+  return `<h4>Kunde & Beitrag</h4><b>${esc(c.name)}</b> · ${p.type} · ${p.pf} · geplant ${dDE(p.date,{weekday:'long',day:'numeric',month:'long'})}<h4>Ziel</h4>${/Aktion|Black|Angebot|Gutschein|Special/.test(p.title)?'Conversion: Anfragen/Verkäufe über Link in Bio, klare Deadline kommunizieren.':/Reel/.test(p.type)?'Reichweite: Hook in 2 s, Speichern/Teilen provozieren.':'Vertrauen & Nähe: Marke sympathisch zeigen, Community-Interaktion.'}<h4>Content-Team · Was produzieren</h4><ul><li>${/Reel/.test(p.type)?'Video: 3–4 kurze Clips à 3–5 s, Handy vertikal, natürliches Licht, kein Logo im Bild':'Fotos: 5–8 Varianten, davon 2 Nahaufnahmen, Hochformat'}</li><li>Motiv: ${esc(p.title)} – ${c.branche==='Fitness'?'Trainingsfläche mit echten Mitgliedern, Bewegung statt Posen':c.branche==='Gastro'?'Produkt im Vordergrund, warme Farbtemperatur, Hände im Bild':c.branche==='Ärzte & Praxen'?'helle Praxisräume, Team in Arbeitskleidung, keine Patientengesichter':c.branche==='Automotive'?'Fahrzeug 3/4-Ansicht, Werkstatt im Hintergrund, saubere Flächen':'Produkt freigestellt + Lifestyle-Szene'}</li><li>Nicht: Stockmaterial, Text im Rohmaterial, Hochkant-Bilder beschneiden</li></ul><h4>Grafik · Umsetzung</h4><ul><li>Format: ${fmt}</li><li>Brand: Logo unten rechts, Farbwelt ${c.branche==='Fitness'?'Schwarz/Grün':c.branche==='Gastro'?'Creme/Braun':'laut Brand-Profil'}, Headline max. 6 Wörter</li><li>CTA: „${/Aktion|Black|Angebot|Gutschein|Special/.test(p.title)?'Jetzt sichern':'Mehr erfahren'}“ auf dem letzten Frame</li></ul><h4>Caption-Entwurf</h4>${esc(p.caption)}<br><span style="color:var(--muted)">${esc(p.hashtags)}</span>${kc.length?`<h4>Kundenfeedback einarbeiten</h4><ul>${kc.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}${notes?`<h4>Hinweise SMM</h4>${esc(notes)}`:''}<h4>Abgabe</h4>Rohmaterial bis ${dDE(shift(p.date,-10))} · Grafik fertig bis ${dDE(shift(p.date,-6))} · Kundenfreigabe bis ${dDE(shift(p.date,-3))}`}
+function shift(iso,d){const x=new Date(iso+'T12:00');x.setDate(x.getDate()+d);return x.toISOString().slice(0,10)}
+$('#br-gen').onclick=()=>{const p=post($('#br-post').value);if(!p)return;const b=$('#br-gen');b.disabled=true;b.textContent='Agent schreibt …';
+  setTimeout(()=>{S.briefs[p.id]=briefingFor(p,$('#br-notes').value.trim());if(p.status==='konzept')p.status='briefing';save();$('#br-out').innerHTML=S.briefs[p.id];$('#br-out').style.color='';$('#br-status').textContent='Erzeugt · an Content-Team & Grafik';b.disabled=false;b.textContent='Briefing generieren';toast('Briefing gespeichert – Beitrag steht auf „Briefing“')},1400)};
+$('#btn-brief-all').onclick=()=>{const ps=S.posts.filter(p=>p.status==='konzept');ps.forEach(p=>{S.briefs[p.id]=briefingFor(p,'');p.status='briefing'});save();rSocial();toast(`${ps.length} Briefings generiert – alle Konzepte stehen auf „Briefing“`)};
+
+// ---------- portal ----------
+function rPortal(){const cid=myClient()||planClient;const c=cl(cid);const ps=S.posts.filter(p=>p.client===cid).sort((a,b)=>b.date.localeCompare(a.date));
+  $('#po-title').textContent=`${c.name} · Ihre Beiträge`;const open=ps.filter(p=>p.status==='freigabe');$('#po-open').textContent=open.length+' offen';
+  $('#po-ig').outerHTML=igProfile(c,ps,false).replace('<div class="ig">','<div class="ig" id="po-ig">');
+  $('#po-list').innerHTML=open.map(p=>`<div class="appr" data-post="${p.id}"><div class="th v${p.v}"></div><div><div class="t">${esc(p.title)}</div><div class="s">${p.type} · ${dDE(p.date,{weekday:'long',day:'numeric',month:'long'})}</div></div><span class="btn sm primary">Ansehen</span></div>`).join('')||'<div style="color:var(--faint)">Aktuell nichts offen – alles freigegeben. Danke!</div>'}
+
+// ---------- grafik ----------
+function rGrafik(){const ps=S.posts.filter(p=>['briefing','produktion','aenderung'].includes(p.status)).sort((a,b)=>a.date.localeCompare(b.date));$('#gr-n').textContent=ps.length;
+  $('#gr-list').innerHTML=ps.map(p=>`<div class="appr" data-post="${p.id}"><div class="th v${p.v}"></div><div><div class="t">${esc(cl(p.client).name)} · ${esc(p.title)}</div><div class="s">${p.type} · fällig ${dDE(shift(p.date,-6))} · ${S.briefs[p.id]?'Briefing vorhanden':'Briefing folgt'}${p.status==='aenderung'?' · <b style="color:var(--rose)">Kundenänderung</b>':''}</div></div><span class="pill ${stPill(p.status)}">${stName(p.status)}</span></div>`).join('')||'<div class="card" style="color:var(--faint)">Queue leer.</div>'}
+function rCrm(){$('#crm-kpis').innerHTML=[['Offene Pipeline','€ 338,5k','15 Deals · € 175k gewichtet'],['Gewonnen Q4','€ 65,2k','26 % vom Ziel'],['Calls analysiert','5','Setter Ø 81 · Closer Ø 73'],['Übergabe offen','1','an Social Media Manager']].map(x=>`<div class="card kpi"><div class="k">${x[0]}</div><div class="v num">${x[1]}</div><div class="d">${x[2]}</div></div>`).join('')}
+function rPerf(){$('#pf-kpis').innerHTML=[['Aktive Kampagnen','23','Meta 17 · Google 6'],['Ad-Spend Oktober','€ 41,2k','über alle Kunden'],['Ø Cost per Lead','€ 18,40','−12 % vs. Sept.'],['Leads ins CRM','214','automatisch zugeordnet']].map(x=>`<div class="card kpi"><div class="k">${x[0]}</div><div class="v num">${x[1]}</div><div class="d">${x[2]}</div></div>`).join('')}
+
+// ---------- team ----------
+function rTeam(){const mods=MODULES.filter(m=>m.id!=='home');
+  $('#team-tbl').innerHTML=`<thead><tr><th>Benutzer</th><th>Rolle</th>${mods.map(m=>`<th>${m.name}</th>`).join('')}<th>Status</th></tr></thead><tbody>${S.users.map(u=>`<tr style="cursor:default"><td><div class="pc"><span class="avatar sm">${u.id}</span><div><b>${esc(u.name)}</b><span>${esc(u.email)}${u.client?' · '+esc(cl(u.client).name):''}</span></div></div></td><td><span class="pill ${u.role==='admin'?'acc':''}">${ROLES[u.role].name}</span></td>${mods.map(m=>`<td><input type="checkbox" data-acc="${u.role}:${m.id}" ${S.access[u.role].includes(m.id)?'checked':''} ${u.role==='admin'?'disabled':''}></td>`).join('')}<td><span class="pill good">Aktiv</span></td></tr>`).join('')}</tbody>`}
+document.addEventListener('change',e=>{const i=e.target.closest('[data-acc]');if(i){const [r,m]=i.dataset.acc.split(':');const a=S.access[r];if(i.checked&&!a.includes(m))a.push(m);if(!i.checked)S.access[r]=a.filter(x=>x!==m);save();toast(`${ROLES[r].name}: ${MODULES.find(x=>x.id===m).name} ${i.checked?'freigeschaltet':'entzogen'}`)}});
+
+// ---------- drawer ----------
+let cur=null;
+function openPost(id){const p=post(id);if(!p)return;cur=p;const c=cl(p.client),role=S.role;const idx=STATUS.findIndex(s=>s[0]===p.status);
+  $('#dr-title').textContent=p.title;$('#dr-sub').textContent=`${c.name} · ${p.type} · ${p.pf} · ${dDE(p.date,{weekday:'long',day:'numeric',month:'long'})}`;
+  const steps=STATUS.map((s,i)=>`<div class="${p.status==='aenderung'?(i<4?'done':i===4?'bad':''):i<idx?'done':i===idx?'cur':''}">${s[1]}</div>`).join('');
+  const canEdit=role!=='kunde';
+  $('#dr-body').innerHTML=`<div class="steps">${steps}</div><div class="pv ${p.type==='Reel'||p.type==='Story'?'reel':''} v${p.v}"><span class="tp">${p.type}</span>${esc(p.title)}</div>
+    <div class="field"><label>Caption</label><textarea id="dr-cap" ${canEdit?'':'readonly'}>${esc(p.caption)}</textarea></div>
+    <div class="field"><label>Hashtags</label><input id="dr-tags" value="${esc(p.hashtags)}" ${canEdit?'':'readonly'}></div>
+    ${canEdit?`<div class="f-row"><div class="field"><label>Status</label><select id="dr-status">${STATUS.map(s=>`<option value="${s[0]}" ${p.status===s[0]?'selected':''}>${s[1]}</option>`).join('')}<option value="aenderung" ${p.status==='aenderung'?'selected':''}>Änderung angefragt</option></select></div><div class="field"><label>Datum</label><input id="dr-date" type="date" value="${p.date}"></div></div>`:''}
+    ${S.briefs[p.id]&&canEdit?`<div class="section-title">Briefing (KI)</div><div class="brief">${S.briefs[p.id]}</div>`:''}
+    <div class="section-title">Kommentare & Feedback</div><div class="cmts" id="dr-cmts">${p.comments.map(x=>`<div class="cmt ${x.who==='Kunde'?'kunde':x.who==='Agent'?'ai':''}"><span class="avatar sm">${x.who==='Kunde'?c.name[0]:x.who==='Agent'?'✦':x.who.slice(0,2).toUpperCase()}</span><div><b>${esc(x.who)}<small>${esc(x.at)}</small></b>${esc(x.text)}</div></div>`).join('')||'<div style="color:var(--faint);font-size:13px">Noch keine Kommentare.</div>'}</div>
+    <div class="cmt-in"><input id="dr-cmt" placeholder="${role==='kunde'?'Ihre Anmerkung …':'Kommentar …'}"><button class="btn primary" id="dr-send">Senden</button></div>`;
+  let foot='';
+  if(role==='kunde'){foot=p.status==='freigabe'?`<button class="btn primary" id="act-approve">✓ Freigeben</button><button class="btn warn" id="act-change">Änderung anfragen</button>`:`<span class="pill ${stPill(p.status)}" style="align-self:center">${stName(p.status)}</span>`}
+  else{foot=`<button class="btn primary" id="act-save">Speichern</button>`+(['intern','produktion'].includes(p.status)?`<button class="btn" id="act-tofg">Zur Kundenfreigabe senden</button>`:'')+(p.status==='freigegeben'?`<button class="btn" id="act-plan">Einplanen</button>`:'')+(['briefing','aenderung'].includes(p.status)&&role!=='smm'?`<button class="btn" id="act-done">Als fertig markieren</button>`:'')+(!S.briefs[p.id]&&role!=='grafik'?`<button class="btn" id="act-brief">✦ Briefing generieren</button>`:'')+`<button class="btn ghost" id="act-portal" style="margin-left:auto">Kundenansicht</button>`}
+  $('#dr-foot').innerHTML=foot;$('#scrim').classList.add('open');$('#drawer').classList.add('open');
+  const bind=(id,fn)=>{const b=$('#'+id);if(b)b.onclick=fn};
+  bind('act-approve',()=>{p.status='freigegeben';p.comments.push({who:'Kunde',text:'Freigegeben ✓',at:'Heute'});save();close();rAll();toast(`„${p.title}“ freigegeben – wird eingeplant`)});
+  bind('act-change',()=>{const t=$('#dr-cmt').value.trim();if(!t){$('#dr-cmt').focus();toast('Bitte kurz beschreiben, was geändert werden soll');return}p.comments.push({who:'Kunde',text:t,at:'Heute'});p.status='aenderung';save();close();rAll();toast('Änderung angefragt – geht an Grafik zurück')});
+  bind('act-save',()=>{p.caption=$('#dr-cap').value;p.hashtags=$('#dr-tags').value;p.status=$('#dr-status').value;p.date=$('#dr-date').value||p.date;save();close();rAll();toast('Beitrag gespeichert')});
+  bind('act-tofg',()=>{p.status='freigabe';save();close();rAll();toast(`An ${c.name} zur Freigabe gesendet`)});
+  bind('act-plan',()=>{p.status='geplant';save();close();rAll();toast('Eingeplant · Veröffentlichung '+dDE(p.date))});
+  bind('act-done',()=>{p.status='intern';p.comments.push({who:'Patrick',text:'Fertig – liegt zur internen Prüfung.',at:'Heute'});save();close();rAll();toast('Fertig markiert – interne Prüfung')});
+  bind('act-brief',()=>{S.briefs[p.id]=briefingFor(p,'');if(p.status==='konzept')p.status='briefing';save();openPost(p.id);toast('Briefing generiert')});
+  bind('act-portal',()=>{close();planClient=p.client;location.hash='portal'});
+  bind('dr-send',()=>{const t=$('#dr-cmt').value.trim();if(!t)return;p.comments.push({who:role==='kunde'?'Kunde':me().user.name.split(' ')[0],text:t,at:'Heute'});save();openPost(p.id)});
+}
+function close(){$('#scrim').classList.remove('open');$('#drawer').classList.remove('open');$$('.modal').forEach(m=>m.classList.remove('open'))}
+function rAll(){route()}
+$('#dr-close').onclick=close;$('#scrim').onclick=close;
+document.addEventListener('click',e=>{const p=e.target.closest('[data-post]');if(p)openPost(p.dataset.post)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+// modals
+$$('[data-open]').forEach(b=>b.onclick=()=>{const k=b.dataset.open;if(k==='post'){$('#np-client').innerHTML=CLIENTS.map(c=>`<option value="${c.id}" ${c.id===planClient?'selected':''}>${esc(c.name)}</option>`).join('')}if(k==='user'){$('#nu-role').innerHTML=Object.entries(ROLES).map(([k,r])=>`<option value="${k}">${r.name}</option>`).join('')}$('#m-'+k).classList.add('open');$('#scrim').classList.add('open')});
+$$('[data-close]').forEach(b=>b.onclick=close);
+$('#np-save').onclick=()=>{const t=$('#np-title').value.trim();if(!t){$('#np-title').focus();return}const c=cl($('#np-client').value);
+  S.posts.push({id:Date.now(),client:c.id,title:t,type:$('#np-type').value,date:$('#np-date').value||'2026-11-20',pf:$('#np-pf').value,status:'konzept',v:Math.ceil(Math.random()*8),caption:$('#np-cap').value||captionFor(c,t),hashtags:'#'+c.handle.replace('.',''),comments:[]});
+  save();close();planClient=c.id;soTab='plan';planMonth=($('#np-date').value||'2026-11').slice(0,7);if(!['2026-11','2026-12'].includes(planMonth))planMonth='2026-11';location.hash='social';rSocial();toast('Beitrag angelegt');$('#np-title').value=$('#np-cap').value=''};
+$('#nu-save').onclick=()=>{const n=$('#nu-name').value.trim();if(!n){$('#nu-name').focus();return}S.users.push({id:n.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(),name:n,email:$('#nu-email').value.trim(),role:$('#nu-role').value});save();close();rTeam();toast('Einladung gesendet (Demo)');$('#nu-name').value=$('#nu-email').value=''};
+$('#theme-btn').onclick=()=>{S.theme=S.theme==='light'?'dark':'light';document.documentElement.dataset.theme=S.theme;save()};
+const q=$('#q'),pop=$('#search-pop');if(q){q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();if(!v){pop.classList.remove('open');return}const cs=CLIENTS.filter(c=>c.name.toLowerCase().includes(v)).slice(0,4),ps=S.posts.filter(p=>p.title.toLowerCase().includes(v)).slice(0,6);pop.innerHTML=cs.map(c=>`<button data-client="${c.id}"><span class="co">${esc(c.name[0])}</span><span>${esc(c.name)}</span><span class="k">Kunde</span></button>`).join('')+ps.map(p=>`<button data-post="${p.id}"><span class="co">▦</span><span>${esc(p.title)} · ${esc(cl(p.client).name)}</span><span class="k">${stName(p.status)}</span></button>`).join('')||'<div style="padding:10px;color:var(--faint)">Nichts gefunden.</div>';pop.classList.add('open')});document.addEventListener('click',e=>{if(!e.target.closest('#search'))pop.classList.remove('open')});pop.addEventListener('click',()=>{pop.classList.remove('open');q.value=''});document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();q.focus()}})}
+// init
+document.documentElement.dataset.theme=(S.theme==='dark')?'dark':'light';
+if(S.role){enter()}else{rLogin()}
+</script>
+
+</body>
+</html>
