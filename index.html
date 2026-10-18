@@ -437,7 +437,7 @@ function enter(){$('#login').hidden=true;$('#app').hidden=false;const m=me();$('
   location.hash=S.access[S.role][0];route()}
 $('#logout').onclick=()=>{S.role=null;save();$('#app').hidden=true;$('#login').hidden=false;rLogin()};
 function route(){let h=(location.hash||'#home').slice(1).replace(/[^a-z]/g,'');if(!S.role){return}if(!S.access[S.role].includes(h))h=S.access[S.role][0];
-  $$('.view').forEach(v=>v.classList.toggle('active',v.id==='v-'+h));$$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===h));$('#crumb').textContent=(MODULES.find(x=>x.id===h)||{}).name;
+  $$('.view').forEach(v=>v.classList.toggle('active',v.id==='v-'+h));$$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===h));$('#crumb').textContent=(MODULES.find(x=>x.id===h)||{}).name;$('#top-cta').hidden=!(S.access[S.role].includes('social')&&['home','social','grafik'].includes(h));
   document.title=(MODULES.find(x=>x.id===h)||{}).name+' · WEMEDIA Cockpit';({home:rHome,social:rSocial,portal:rPortal,grafik:rGrafik,team:rTeam,crm:rCrm,performance:rPerf})[h]();window.scrollTo({top:0})}
 window.addEventListener('hashchange',route);
 $('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(b)location.hash=b.dataset.v});$('#notif-btn').onclick=()=>toast('3 neue: Studio Fit Graz Änderung · 6 Beiträge in Kundenfreigabe · Content-Agent hat 7 Briefings erzeugt');
