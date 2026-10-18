@@ -228,6 +228,12 @@ td.r,th.r{text-align:right}
 .modal .box{background:var(--card);border-radius:var(--r-xl);box-shadow:var(--shadow-pop);width:min(560px,100%);max-height:calc(100% - 32px);overflow:auto;padding:24px}
 .modal h2{font-size:20px;margin-bottom:16px}.modal .mf{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
 .demo{font-size:11.5px;color:var(--faint);text-align:center;margin-top:24px}
+.kc .hd{align-items:flex-start}.kc .hd .pill{margin-left:auto;flex:none}.kc .hd>div{min-width:0;flex:1}.kc .hd b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.budget{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.budget div{background:var(--panel);border-radius:14px;padding:10px 12px}.budget span{font-size:11px;color:var(--muted);display:block;margin-bottom:2px}.budget b{font-size:17px;font-weight:600}.budget div.hl{background:var(--accent-soft)}.budget div.hl b{color:var(--accent-deep)}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--warn-bg);color:var(--ink);font-size:13.5px;margin:12px 0;cursor:pointer}.chk input{width:18px;height:18px;margin-top:1px;accent-color:var(--accent-deep);flex:none}
+.steps.s5{grid-template-columns:repeat(5,1fr)}
+.okby{display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--good);background:var(--good-bg);padding:8px 12px;border-radius:12px;margin:8px 0 12px;font-weight:600}
+.po-sum{display:flex;flex-direction:column;gap:10px}.po-sum .ln{display:flex;justify-content:space-between;font-size:13.5px;padding:8px 0;border-top:1px solid var(--hair)}.po-sum .ln:first-child{border-top:0}.po-sum .ln b{font-weight:600}
 .alert{display:flex;gap:10px;align-items:center;padding:12px 16px;border-radius:var(--r-md);background:var(--warn-bg);color:var(--warn);font-weight:600;font-size:13.5px;margin-bottom:var(--gap)}.alert .link{margin-left:auto;color:var(--warn)}
 @media(max-width:1000px){.shell{grid-template-columns:1fr}.side{position:sticky;top:env(safe-area-inset-top,0px);height:auto;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;align-items:center;gap:4px;padding:10px 12px;z-index:25;scrollbar-width:none}.side .sec,.side .rolepill,.side .foot,.side .lbl span,.side .brand small{display:none}.side a,.side button.nv{width:auto;padding:8px 12px;border-radius:99px}.side .ic{display:none}.side .lbl b{font-size:13px;white-space:nowrap}.main{padding:0 max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}.topbar{margin:0 -16px 8px;padding:0 16px;height:60px}}
 </style>
@@ -283,7 +289,7 @@ td.r,th.r{text-align:right}
       <div><div class="eyebrow">Modul · Social Media</div><h1>Social Media Management</h1><p>Redaktionspläne, Freigaben und Briefings für alle betreuten Kunden.</p></div>
       <div class="actions"><button class="btn" id="btn-brief-all"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4z"/></svg>KI-Briefings erstellen</button><button class="btn primary" data-open="post"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Neuer Beitrag</button></div>
     </div>
-    <div class="toolbar"><div class="tabs" id="so-tabs"><button data-t="kunden" class="active">Kunden</button><button data-t="plan">Redaktionsplan</button><button data-t="pipeline">Produktion</button><button data-t="freigaben">Freigaben <span class="pill warn" id="so-fg-n">0</span></button><button data-t="briefings">Briefings</button></div><div id="so-tool-right"></div></div>
+    <div class="toolbar"><div class="tabs" id="so-tabs"><button data-t="kunden" class="active">Kunden</button><button data-t="plan">Redaktionsplan</button><button data-t="pipeline">Produktion</button><button data-t="freigaben">Freigaben <span class="pill warn" id="so-fg-n">0</span></button><button data-t="kampagnen">Kampagnen <span class="pill warn" id="so-ka-n">0</span></button><button data-t="briefings">Briefings</button></div><div id="so-tool-right"></div></div>
     <div id="so-kunden"><div class="grid g-4" style="margin-bottom:var(--gap)" id="so-kpis"></div><div class="client-grid" id="clients"></div></div>
     <div id="so-plan" hidden>
       <div class="toolbar"><div class="actions"><select class="sel" id="plan-client"></select><div class="tabs" id="plan-month"><button data-m="2026-11" class="active">November 2026</button><button data-m="2026-12">Dezember 2026</button></div></div><div class="tabs" id="plan-mode"><button data-v="cal" class="active">Kalender</button><button data-v="ig">Instagram-Vorschau</button><button data-v="list">Liste</button></div></div>
@@ -294,15 +300,25 @@ td.r,th.r{text-align:right}
     </div>
     <div id="so-pipeline" hidden><div class="board" id="so-board"></div></div>
     <div id="so-freigaben" hidden><div class="grid g-12"><div class="c-8" id="fg-list"></div><div class="c-4"><div class="card"><div class="card-head"><h2>Freigabe-Flow</h2></div><div class="row-list" id="fg-flow"></div></div></div></div></div>
+    <div id="so-kampagnen" hidden>
+      <div class="grid g-4" style="margin-bottom:var(--gap)" id="ka-kpis"></div>
+      <div class="toolbar"><div class="tabs" id="ka-filter"><button data-f="alle" class="active">Alle</button><button data-f="freigabe">Zur Freigabe</button><button data-f="aktiv">Aktiv</button><button data-f="entwurf">Entwurf</button><button data-f="beendet">Beendet</button></div><button class="btn primary" data-open="camp"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Neue Kampagne</button></div>
+      <div class="client-grid" id="ka-list"></div>
+    </div>
     <div id="so-briefings" hidden><div class="grid g-12"><div class="c-5"><div class="card"><div class="card-head"><div><h2>Briefing-Generator</h2><div class="sub">Für das Content-Team · läuft über den KI-Agenten</div></div></div><div class="field"><label>Beitrag</label><select id="br-post"></select></div><div class="field"><label>Zusätzliche Hinweise</label><textarea id="br-notes" placeholder="z. B. Fokus auf neues Studio, Herbstlicht, kein Stockmaterial"></textarea></div><button class="btn primary" id="br-gen">Briefing generieren</button></div></div><div class="c-7"><div class="card"><div class="card-head"><h2>Briefing</h2><span class="pill acc" id="br-status">Noch keins erzeugt</span></div><div id="br-out" class="brief" style="color:var(--faint)">Beitrag wählen und generieren – das Briefing geht an Content-Team, Grafiker und in den Beitrag.</div></div></div></div></div>
   </section>
 
   <!-- KUNDENPORTAL -->
   <section class="view" id="v-portal">
-    <div class="page-head"><div><div class="eyebrow">Kundenportal</div><h1 id="po-title">Ihre Beiträge</h1><p>So sieht Ihr Feed in den nächsten Wochen aus. Beitrag antippen, freigeben oder Änderung anfragen.</p></div><div class="actions"><span class="pill warn" id="po-open">0 offen</span></div></div>
-    <div class="grid g-12">
+    <div class="page-head"><div><div class="eyebrow">Kundenportal</div><h1 id="po-title">Ihre Beiträge</h1><p id="po-desc">So sieht Ihr Feed in den nächsten Wochen aus. Beitrag antippen, freigeben oder Änderung anfragen.</p></div><div class="actions"><span class="pill warn" id="po-open">0 offen</span></div></div>
+    <div class="toolbar"><div class="tabs" id="po-tabs"><button data-t="posts" class="active">Beiträge <span class="pill warn" id="po-n-posts">0</span></button><button data-t="camps">Kampagnen & Budget <span class="pill warn" id="po-n-camps">0</span></button></div></div>
+    <div class="grid g-12" id="po-posts">
       <div class="c-5"><div class="ig" id="po-ig"></div></div>
       <div class="c-7"><div class="card"><div class="card-head"><h2>Zur Freigabe</h2></div><div id="po-list"></div></div></div>
+    </div>
+    <div class="grid g-12" id="po-camps" hidden>
+      <div class="c-7"><div class="section-title" style="margin-top:0">Budget-Freigabe offen</div><div id="po-camp-open"></div><div class="section-title">Laufende & freigegebene Kampagnen</div><div id="po-camp-run"></div></div>
+      <div class="c-5"><div class="card"><div class="card-head"><h2>Ihr Mediabudget</h2></div><div id="po-budget"></div></div></div>
     </div>
   </section>
 
@@ -314,7 +330,7 @@ td.r,th.r{text-align:right}
 
   <!-- CRM / PERFORMANCE / FINANZEN placeholders -->
   <section class="view" id="v-crm" style="max-width:none"><iframe id="crm-frame" title="CRM" src="about:blank" style="width:100%;height:calc(100vh - 90px);border:0;border-radius:22px;background:var(--card)"></iframe></section>
-  <section class="view" id="v-performance"><div class="page-head"><div><div class="eyebrow">Modul · Performance</div><h1>Performance Marketing</h1><p>Meta & Google Ads pro Kunde – der Performance-Agent übernimmt Reporting und Optimierungsvorschläge.</p></div><span class="pill">Nächstes Modul</span></div><div class="grid g-4" id="pf-kpis"></div></section>
+  <section class="view" id="v-performance"><div class="page-head"><div><div class="eyebrow">Modul · Performance</div><h1>Performance Marketing</h1><p>Meta & Google Ads pro Kunde – der Performance-Agent übernimmt Reporting und Optimierungsvorschläge.</p></div><span class="pill">Nächstes Modul</span></div><div class="grid g-4" style="margin-bottom:var(--gap)" id="pf-kpis"></div><div class="section-title">Laufende Kampagnen</div><div id="pf-list"></div></section>
 
   <!-- TEAM -->
   <section class="view" id="v-team">
@@ -337,6 +353,14 @@ td.r,th.r{text-align:right}
   <div class="f-row"><div class="field"><label>Datum</label><input id="np-date" type="date" value="2026-11-20"></div><div class="field"><label>Plattform</label><select id="np-pf"><option>Instagram</option><option>Facebook</option><option>Instagram + Facebook</option><option>TikTok</option><option>LinkedIn</option></select></div></div>
   <div class="field"><label>Caption (Entwurf)</label><textarea id="np-cap"></textarea></div>
   <div class="mf"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="np-save">Anlegen</button></div></div></div>
+<div class="modal" id="m-camp"><div class="box"><h2>Neue Kampagne</h2>
+  <div class="f-row"><div class="field"><label>Kunde</label><select id="nc-client"></select></div><div class="field"><label>Ziel</label><select id="nc-goal"><option>Leads</option><option>Termine</option><option>Verkäufe</option><option>Reichweite</option></select></div></div>
+  <div class="field"><label>Kampagnenname</label><input id="nc-name" placeholder="z. B. Neujahrs-Angebot Leadkampagne"></div>
+  <div class="f-row"><div class="field"><label>Plattform</label><select id="nc-pf"><option>Meta</option><option>Google</option><option>Meta + Google</option><option>TikTok</option></select></div><div class="field"><label>Mediabudget gesamt (€)</label><input id="nc-budget" type="number" min="50" step="50" value="1000"></div></div>
+  <div class="f-row"><div class="field"><label>Start</label><input id="nc-start" type="date" value="2026-11-15"></div><div class="field"><label>Ende</label><input id="nc-end" type="date" value="2026-12-15"></div></div>
+  <div class="field"><label>Zielgruppe</label><input id="nc-aud" placeholder="z. B. Wien + 30 km, 25–55, Interesse Fitness"></div>
+  <div class="field"><label>Creatives (aus dem Redaktionsplan, kommagetrennt)</label><input id="nc-cre" placeholder="z. B. Neujahrs-Angebot, Reel Transformation"></div>
+  <div class="mf"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="nc-save">Anlegen</button></div></div></div>
 <div class="modal" id="m-user"><div class="box"><h2>Benutzer einladen</h2>
   <div class="f-row"><div class="field"><label>Name</label><input id="nu-name"></div><div class="field"><label>E-Mail</label><input id="nu-email" type="email"></div></div>
   <div class="field"><label>Rolle</label><select id="nu-role"></select></div>
@@ -414,8 +438,24 @@ function seedPosts(){
 }
 function captionFor(c,t){return `${t.replace(/^(Reel|Carousel|Story):\s*/,'')} bei ${c.name} ✨ Alle Infos im Link in der Bio. Wir freuen uns auf euch!`}
 
+// campaigns (Meta/Google Ads) — budget must be approved by the client
+const CSTAT=[['entwurf','Entwurf'],['freigabe','Budget-Freigabe'],['freigegeben','Freigegeben'],['aktiv','Aktiv'],['beendet','Beendet']];
+const CSN=Object.fromEntries(CSTAT);
+function seedCamps(){return [
+  {id:1,client:1,name:'Neujahrs-Angebot Leadkampagne',goal:'Leads',pf:'Meta',start:'2026-12-27',end:'2027-01-31',budget:1800,aud:'Graz + 25 km · 25–45 · Interesse Fitness & Gesundheit',cre:['Neujahrs-Angebot','Transformation'],status:'freigabe',comments:[{who:'Agent',text:'Empfehlung: 70 % Budget auf Lead-Formular, 30 % auf Reel-Reichweite. CPL-Ziel € 14 (Benchmark Fitness Graz).',at:'Gestern 16:20'}]},
+  {id:2,client:1,name:'Black-Friday-Mitgliedschaft',goal:'Leads',pf:'Meta',start:'2026-11-20',end:'2026-11-30',budget:900,aud:'Graz + 20 km · 20–50',cre:['Black-Friday-Aktion'],status:'aktiv',spend:412,res:23,approval:{by:'Lena Huber',at:'2026-11-12',amount:900},comments:[]},
+  {id:3,client:1,name:'Herbst-Kennenlernwoche',goal:'Termine',pf:'Meta',start:'2026-09-15',end:'2026-10-05',budget:600,aud:'Graz + 15 km · 25–55',cre:['Kennenlernwoche'],status:'beendet',spend:598,res:41,approval:{by:'Lena Huber',at:'2026-09-10',amount:600},comments:[]},
+  {id:4,client:5,name:'Produkt-Launch Serum',goal:'Verkäufe',pf:'Meta + Google',start:'2026-11-10',end:'2026-12-10',budget:3500,aud:'AT/DE · Frauen 25–45 · Skincare',cre:['Produkt-Launch Serum','Routine','UGC Review'],status:'aktiv',spend:1240,res:86,approval:{by:'Velora Cosmetics',at:'2026-11-05',amount:3500},comments:[]},
+  {id:5,client:5,name:'Gift Guide Weihnachten',goal:'Verkäufe',pf:'Meta',start:'2026-12-01',end:'2026-12-20',budget:2400,aud:'AT/DE · 25–55 · Geschenke',cre:['Gift Guide','Adventkalender'],status:'entwurf',comments:[]},
+  {id:6,client:4,name:'Winterreifen-Check Termine',goal:'Termine',pf:'Meta',start:'2026-11-02',end:'2026-11-30',budget:1200,aud:'Wien Süd + 30 km · Autobesitzer',cre:['Winterreifen-Check','Werkstatt-Insights'],status:'freigabe',comments:[]},
+  {id:7,client:6,name:'Silvester-Gala',goal:'Verkäufe',pf:'Meta',start:'2026-11-15',end:'2026-12-28',budget:2000,aud:'AT/DE/CH · Paare 30–65 · Reisen',cre:['Silvester-Gala','Spa-Weekend'],status:'freigegeben',approval:{by:'Alpenhof Hotels',at:'2026-10-16',amount:2000},comments:[]},
+  {id:8,client:10,name:'Gutschein-Aktion',goal:'Verkäufe',pf:'Meta + Google',start:'2026-11-24',end:'2026-12-23',budget:1500,aud:'Wien · 25–60',cre:['Gutschein-Aktion','Weihnachtsgeschenk'],status:'aenderung',comments:[{who:'Kunde',text:'Bitte Budget auf € 1.000 reduzieren – Dezember ist bei uns knapp. Rest passt.',at:'Heute 08:50'}]},
+  {id:9,client:2,name:'Bleaching-Aktion',goal:'Termine',pf:'Google',start:'2026-11-05',end:'2026-12-05',budget:800,aud:'Wien 22 + 10 km · Suche „Bleaching Wien“',cre:['Bleaching FAQ'],status:'aktiv',spend:310,res:12,approval:{by:'Zahnzentrum Donaustadt',at:'2026-11-02',amount:800},comments:[]},
+  {id:10,client:8,name:'Challenge Jänner',goal:'Leads',pf:'Meta',start:'2026-12-20',end:'2027-01-20',budget:1000,aud:'Salzburg + 20 km · 20–40',cre:['Challenge'],status:'entwurf',comments:[]}
+]}
+
 const KEY='wemedia-cockpit-v1';let S;
-function load(){try{const r=localStorage.getItem(KEY);if(r){S=JSON.parse(r);const ids=MODULES.map(m=>m.id);for(const k in S.access)S.access[k]=S.access[k].filter(m=>ids.includes(m));for(const k in ROLES)if(!S.access[k])S.access[k]=ROLES[k].mods.slice();return}}catch(e){}S={posts:seedPosts(),users:USERS,access:Object.fromEntries(Object.entries(ROLES).map(([k,v])=>[k,v.mods.slice()])),role:null,theme:'light',briefs:{}}}
+function load(){try{const r=localStorage.getItem(KEY);if(r){S=JSON.parse(r);const ids=MODULES.map(m=>m.id);for(const k in S.access)S.access[k]=S.access[k].filter(m=>ids.includes(m));for(const k in ROLES)if(!S.access[k])S.access[k]=ROLES[k].mods.slice();if(!S.camps)S.camps=seedCamps();return}}catch(e){}S={posts:seedPosts(),camps:seedCamps(),users:USERS,access:Object.fromEntries(Object.entries(ROLES).map(([k,v])=>[k,v.mods.slice()])),role:null,theme:'light',briefs:{}}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 load();
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -428,6 +468,13 @@ const stName=s=>s==='aenderung'?'Änderung angefragt':SN[s];
 const me=()=>S.role?{...ROLES[S.role],id:S.role,user:S.users.find(u=>u.role===S.role)||S.users[0]}:null;
 const myClient=()=>S.role==='kunde'?(S.users.find(u=>u.role==='kunde')?.client||1):null;
 const openPosts=()=>S.posts.filter(p=>!['live'].includes(p.status));
+const camp=id=>S.camps.find(k=>k.id==id);
+const eur=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n||0);
+const cDays=k=>Math.max(1,Math.round((new Date(k.end+'T12:00')-new Date(k.start+'T12:00'))/864e5)+1);
+const cPill=s=>({entwurf:'',freigabe:'warn',freigegeben:'acc',aktiv:'good',beendet:'',aenderung:'rose'})[s]||'';
+const cName=s=>s==='aenderung'?'Änderung angefragt':CSN[s];
+const resLabel=k=>({Leads:'Leads',Termine:'Termine',Verkäufe:'Verkäufe',Reichweite:'Tsd. Reichweite'})[k.goal]||'Ergebnisse';
+const sum=(arr,f)=>arr.reduce((a,x)=>a+(f(x)||0),0);
 
 // ---------- login ----------
 function rLogin(){$('#roles').innerHTML=Object.entries(ROLES).map(([k,r])=>{const u=S.users.find(x=>x.role===k);return `<button class="role ${k==='admin'?'admin':''}" data-role="${k}"><span class="avatar">${u?u.id:'?'}</span><b>${r.name}</b><span>${u?esc(u.name):''}</span><span>${r.desc}</span><div class="mods">${S.access[k].filter(m=>m!=='home').map(m=>`<i>${MODULES.find(x=>x.id===m).name}</i>`).join('')}</div></button>`}).join('')}
@@ -440,27 +487,45 @@ function route(){let h=(location.hash||'#home').slice(1).replace(/[^a-z]/g,'');i
   $$('.view').forEach(v=>v.classList.toggle('active',v.id==='v-'+h));$$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===h));$('#crumb').textContent=(MODULES.find(x=>x.id===h)||{}).name;$('#top-cta').hidden=!(S.access[S.role].includes('social')&&['home','social','grafik'].includes(h));
   document.title=(MODULES.find(x=>x.id===h)||{}).name+' · WEMEDIA Cockpit';({home:rHome,social:rSocial,portal:rPortal,grafik:rGrafik,team:rTeam,crm:rCrm,performance:rPerf})[h]();window.scrollTo({top:0})}
 window.addEventListener('hashchange',route);
-$('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(b)location.hash=b.dataset.v});$('#notif-btn').onclick=()=>toast('3 neue: Studio Fit Graz Änderung · 6 Beiträge in Kundenfreigabe · Content-Agent hat 7 Briefings erzeugt');
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(b)location.hash=b.dataset.v});$('#notif-btn').onclick=()=>toast('3 neue: Lumen Optik möchte Kampagnen-Budget ändern · Studio Fit Graz Änderung · Content-Agent hat 7 Briefings erzeugt');
 
 // ---------- home ----------
 function rHome(){const m=me();const fg=S.posts.filter(p=>p.status==='freigabe').length,ae=S.posts.filter(p=>p.status==='aenderung').length,pr=S.posts.filter(p=>['briefing','produktion'].includes(p.status)).length;
   const low=CLIENTS.filter(c=>planned(c.id)<c.soll*0.5);
   $('#home-title').textContent='Guten Tag, '+m.user.name.split(' ')[0]+'.';const tot=S.posts.filter(p=>p.date.startsWith('2026-11')).length,soll=CLIENTS.reduce((a,c)=>a+c.soll,0);$('#home-side').innerHTML=`<div class="lbl">Social Media · November</div><div class="v num">${tot} von ${soll} Beiträgen geplant</div><div class="s">${CLIENTS.length} Kunden · ${fg} in Freigabe · ${ae} Änderungen</div><div class="segs">${CLIENTS.slice(0,8).map(c=>`<i class="${planned(c.id)>=c.soll*0.8?'on':''}"></i>`).join('')}</div>`;$('#home-sub').textContent=m.id==='admin'?'Alle Module, Agenten und Kunden auf einen Blick.':`Deine Module: ${S.access[S.role].filter(x=>x!=='home').map(x=>MODULES.find(y=>y.id===x).name).join(', ')}.`;
   const al=$('#home-alert');if(low.length&&S.access[S.role].includes('social')){al.hidden=false;al.innerHTML=`⚠ ${low.length} Kunden sind für November unter 50 % geplant: ${low.slice(0,3).map(c=>c.name).join(', ')}${low.length>3?' + '+(low.length-3)+' weitere':''} <button class="link" data-go="social:kunden">Redaktionspläne →</button>`}else al.hidden=true;
-  const k=[['Beiträge in Kundenfreigabe',fg,'warten auf Rückmeldung','social'],['Änderungen angefragt',ae,'zurück an Grafik','social'],['In Produktion',pr,'Briefings beim Content-Team','grafik'],['Offene Deals im CRM',15,'€ 338,5k Pipeline','crm']];
-  $('#home-kpis').innerHTML=k.filter(x=>S.access[S.role].includes(x[3])).map(x=>`<div class="card kpi" data-go="${x[3]}" style="cursor:pointer"><span class="go">↗</span><div class="ic">${MODULES.find(m=>m.id===x[3]).icon}</div><div class="v num">${x[1]}</div><div class="k">${x[0]}</div><div class="d">${x[2]}</div></div>`).join('');
+  const ko=S.camps.filter(x=>['freigabe','aenderung'].includes(x.status));
+  const k=[['Beiträge in Kundenfreigabe',fg,'warten auf Rückmeldung','social','social:freigaben'],['Kampagnen-Budget zur Freigabe',eur(sum(ko,x=>x.budget)),`${ko.length} Kampagnen warten auf Kunden`,'social','social:kampagnen'],['In Produktion',pr,`${ae} Änderungen · Briefings beim Content-Team`,'grafik','grafik'],['Offene Deals im CRM',15,'€ 338,5k Pipeline','crm','crm']];
+  $('#home-kpis').innerHTML=k.filter(x=>S.access[S.role].includes(x[3])).map(x=>`<div class="card kpi" data-go="${x[4]}" style="cursor:pointer"><span class="go">↗</span><div class="ic">${MODULES.find(m=>m.id===x[3]).icon}</div><div class="v num">${x[1]}</div><div class="k">${x[0]}</div><div class="d">${x[2]}</div></div>`).join('');
   $('#mods').innerHTML=MODULES.filter(x=>x.id!=='home').map(x=>{const ok=S.access[S.role].includes(x.id);return `<div class="card mod ${ok?'':'locked'} ${x.soon?'locked':''}" ${ok&&!x.soon?`data-go="${x.id}"`:''}><div class="ic">${x.icon}</div><h3>${x.name}</h3><p>${x.desc}</p><div class="st">${x.soon?'<span class="pill">In Planung</span>':ok?'<span class="pill good">Aktiv</span>':'<span class="pill">Kein Zugriff</span>'}${x.ext?`<span class="ext">${x.ext}</span>`:''}</div></div>`}).join('');
-  const today=[['Lumen Optik · Preisgespräch 14:30','CRM · Call mit KI-Agent','crm'],['Studio Fit Graz · Änderung vom Kunden','Social · Beitrag „Reel: Morning Routine“','social'],[`${fg} Beiträge warten auf Kundenfreigabe`,'Social · Erinnerung an Kunden senden','social'],['Café Morgenrot · 3 Briefings offen','Grafik · Winterkarte, Latte Art, Brunch','grafik']];
+  const today=[['Lumen Optik · Preisgespräch 14:30','CRM · Call mit KI-Agent','crm'],['Studio Fit Graz · Änderung vom Kunden','Social · Beitrag „Reel: Morning Routine“','social'],[`${fg} Beiträge warten auf Kundenfreigabe`,'Social · Erinnerung an Kunden senden','social'],[`${ko.length} Kampagnen warten auf Budget-Freigabe`,'Social · '+ko.map(x=>cl(x.client).name).slice(0,2).join(', '),'social'],['Café Morgenrot · 3 Briefings offen','Grafik · Winterkarte, Latte Art, Brunch','grafik']];
   $('#home-today').innerHTML=today.filter(t=>S.access[S.role].includes(t[2])).map(t=>`<div class="row" data-go="${t[2]}"><span class="co">${t[2][0].toUpperCase()}</span><div><div class="t">${t[0]}</div><div class="s">${t[1]}</div></div><span class="r pill">→</span></div>`).join('')||'<div class="s" style="color:var(--faint)">Nichts offen.</div>';
-  $('#home-agents').innerHTML=[['Sales-Agent','4 Calls analysiert heute','good'],['Content-Agent','7 Briefings generiert','good'],['Grafik-Agent','3 Entwürfe in Queue','warn'],['Performance-Agent','Nächstes Modul','']].map(a=>`<div class="row"><span class="co" style="background:var(--accent-soft);color:var(--accent)">✦</span><div><div class="t">${a[0]}</div><div class="s">${a[1]}</div></div><span class="r pill ${a[2]}">${a[2]==='good'?'läuft':a[2]==='warn'?'arbeitet':'bald'}</span></div>`).join('')}
+  $('#home-agents').innerHTML=[['Sales-Agent','4 Calls analysiert heute','good'],['Content-Agent','7 Briefings generiert','good'],['Grafik-Agent','3 Entwürfe in Queue','warn'],['Performance-Agent',`${S.camps.filter(k=>k.status==='aktiv').length} Kampagnen aktiv · 1 Budget-Empfehlung`,'good']].map(a=>`<div class="row"><span class="co" style="background:var(--accent-soft);color:var(--accent)">✦</span><div><div class="t">${a[0]}</div><div class="s">${a[1]}</div></div><span class="r pill ${a[2]}">${a[2]==='good'?'läuft':a[2]==='warn'?'arbeitet':'bald'}</span></div>`).join('')}
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){const [v,t]=g.dataset.go.split(':');location.hash=v;if(t){soTab=t;setTimeout(rSocial,0)}}});
 function planned(cid,month='2026-11'){return S.posts.filter(p=>p.client==cid&&p.date.startsWith(month)&&p.status!=='konzept').length}
 
 // ---------- social ----------
 let soTab='kunden',planClient=1,planMonth='2026-11',planMode='cal';
-function rSocial(){$$('#so-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.t===soTab));['kunden','plan','pipeline','freigaben','briefings'].forEach(t=>$('#so-'+t).hidden=t!==soTab);
-  const fg=S.posts.filter(p=>p.status==='freigabe').length;$('#so-fg-n').textContent=fg;const nf=$('#nav-fg');if(nf)nf.textContent=fg;
-  ({kunden:rClients,plan:rPlan,pipeline:rBoard,freigaben:rFreigaben,briefings:rBriefings})[soTab]()}
+function rSocial(){$$('#so-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.t===soTab));['kunden','plan','pipeline','freigaben','kampagnen','briefings'].forEach(t=>$('#so-'+t).hidden=t!==soTab);
+  const fg=S.posts.filter(p=>p.status==='freigabe').length;$('#so-fg-n').textContent=fg;const nf=$('#nav-fg');if(nf)nf.textContent=fg;$('#so-ka-n').textContent=S.camps.filter(k=>['freigabe','aenderung'].includes(k.status)).length;
+  ({kunden:rClients,plan:rPlan,pipeline:rBoard,freigaben:rFreigaben,kampagnen:rKamp,briefings:rBriefings})[soTab]()}
+// ---------- campaigns ----------
+let kaFilter='alle';
+function campCard(k,forClient){const c=cl(k.client);const act=['aktiv','beendet'].includes(k.status);const pct=act?Math.min(100,Math.round(k.spend/k.budget*100)):0;const cpl=act&&k.res?k.spend/k.res:null;
+  return `<div class="card cl kc" data-camp="${k.id}"><div class="hd"><span class="co">${esc(c.name[0])}</span><div><b title="${esc(k.name)}">${esc(k.name)}</b><span>${forClient?'':esc(c.name)+' · '}${k.pf} · Ziel: ${k.goal}</span></div><span class="pill ${cPill(k.status)}">${cName(k.status)}</span></div>
+    <div class="nums"><div><span>Mediabudget</span><b class="num">${eur(k.budget)}</b></div><div><span>Laufzeit</span><b class="num" style="font-size:13px">${dDE(k.start)} – ${dDE(k.end)}</b></div><div><span>${act?resLabel(k):'Creatives'}</span><b class="num">${act?k.res:k.cre.length}</b></div></div>
+    ${act?`<div class="bar"><i class="${pct>90?'mid':''}" style="width:${pct}%"></i></div><div class="plan"><span>${eur(k.spend)} von ${eur(k.budget)} ausgegeben${cpl?` · ${eur(cpl)} / ${resLabel(k).replace('Tsd. ','')}`:''}</span><span class="num">${pct} %</span></div>`
+    :k.status==='freigabe'?`<div class="plan"><span style="color:var(--warn)">Wartet auf Budget-Freigabe durch ${esc(S.users.find(u=>u.client===c.id)?.name||c.name)}</span><span>${cDays(k)} Tage · Ø ${eur(k.budget/cDays(k))}/Tag</span></div>`
+    :k.status==='aenderung'?`<div class="plan"><span style="color:var(--rose)">${esc(k.comments.filter(x=>x.who==='Kunde').slice(-1)[0]?.text||'Änderung angefragt')}</span></div>`
+    :k.approval?`<div class="plan"><span>Freigegeben von ${esc(k.approval.by)} · ${dDE(k.approval.at)}</span><span>${cDays(k)} Tage</span></div>`
+    :`<div class="plan"><span>Entwurf – noch nicht beim Kunden</span><span>${cDays(k)} Tage · Ø ${eur(k.budget/cDays(k))}/Tag</span></div>`}</div>`}
+function rKamp(){const ks=S.camps;const open=ks.filter(k=>['freigabe','aenderung'].includes(k.status)),akt=ks.filter(k=>k.status==='aktiv');
+  $('#ka-kpis').innerHTML=[['Budget zur Freigabe',eur(sum(open,k=>k.budget)),`${open.length} Kampagnen warten auf Kunden`],['Aktive Kampagnen',akt.length,`${eur(sum(akt,k=>k.budget))} freigegebenes Budget`],['Ausgegeben (laufend)',eur(sum(akt,k=>k.spend)),`${Math.round(sum(akt,k=>k.spend)/Math.max(1,sum(akt,k=>k.budget))*100)} % der aktiven Budgets`],['Ø Cost per Result',eur(sum(akt,k=>k.spend)/Math.max(1,sum(akt,k=>k.res))),`${sum(akt,k=>k.res)} Ergebnisse aus Meta & Google`]].map(x=>`<div class="card kpi"><div class="k">${x[0]}</div><div class="v num">${x[1]}</div><div class="d">${x[2]}</div></div>`).join('');
+  $$('#ka-filter button').forEach(b=>b.classList.toggle('active',b.dataset.f===kaFilter));
+  const order={aenderung:0,freigabe:1,aktiv:2,freigegeben:3,entwurf:4,beendet:5};
+  const list=ks.filter(k=>kaFilter==='alle'||(kaFilter==='freigabe'?['freigabe','aenderung'].includes(k.status):k.status===kaFilter)).sort((a,b)=>order[a.status]-order[b.status]||a.start.localeCompare(b.start));
+  $('#ka-list').innerHTML=list.map(k=>campCard(k,false)).join('')||'<div class="card" style="color:var(--faint)">Keine Kampagnen in dieser Ansicht.</div>'}
+$('#ka-filter').addEventListener('click',e=>{const b=e.target.closest('button');if(b){kaFilter=b.dataset.f;rKamp()}});
 $('#so-tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b){soTab=b.dataset.t;rSocial()}});
 function rClients(){const tot=S.posts.filter(p=>p.date.startsWith('2026-11')).length,soll=CLIENTS.reduce((a,c)=>a+c.soll,0);
   $('#so-kpis').innerHTML=[['Betreute Kunden',CLIENTS.length,'Social-Media-Retainer'],['November geplant',`${tot} / ${soll}`,'Beiträge Ist / Soll'],['In Kundenfreigabe',S.posts.filter(p=>p.status==='freigabe').length,'warten auf Rückmeldung'],['Änderungen offen',S.posts.filter(p=>p.status==='aenderung').length,'zurück an Grafik']].map(x=>`<div class="card kpi"><div class="k">${x[0]}</div><div class="v num">${x[1]}</div><div class="d">${x[2]}</div></div>`).join('');
@@ -501,16 +566,30 @@ $('#br-gen').onclick=()=>{const p=post($('#br-post').value);if(!p)return;const b
 $('#btn-brief-all').onclick=()=>{const ps=S.posts.filter(p=>p.status==='konzept');ps.forEach(p=>{S.briefs[p.id]=briefingFor(p,'');p.status='briefing'});save();rSocial();toast(`${ps.length} Briefings generiert – alle Konzepte stehen auf „Briefing“`)};
 
 // ---------- portal ----------
-function rPortal(){const cid=myClient()||planClient;const c=cl(cid);const ps=S.posts.filter(p=>p.client===cid).sort((a,b)=>b.date.localeCompare(a.date));
-  $('#po-title').textContent=`${c.name} · Ihre Beiträge`;const open=ps.filter(p=>p.status==='freigabe');$('#po-open').textContent=open.length+' offen';
+let poTab='posts';
+function rPortal(){const cid=myClient()||planClient;const c=cl(cid);const ps=S.posts.filter(p=>p.client===cid).sort((a,b)=>b.date.localeCompare(a.date));const ks=S.camps.filter(k=>k.client===cid);
+  const open=ps.filter(p=>p.status==='freigabe'),kopen=ks.filter(k=>k.status==='freigabe');
+  $('#po-title').textContent=`${c.name} · ${poTab==='posts'?'Ihre Beiträge':'Ihre Kampagnen'}`;$('#po-desc').textContent=poTab==='posts'?'So sieht Ihr Feed in den nächsten Wochen aus. Beitrag antippen, freigeben oder Änderung anfragen.':'Jede Kampagne startet erst, wenn Sie das Mediabudget freigegeben haben. Kampagne antippen, Budget prüfen, freigeben.';
+  $('#po-open').textContent=(open.length+kopen.length)+' offen';$('#po-n-posts').textContent=open.length;$('#po-n-camps').textContent=kopen.length;
+  $$('#po-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.t===poTab));$('#po-posts').hidden=poTab!=='posts';$('#po-camps').hidden=poTab!=='camps';
   $('#po-ig').outerHTML=igProfile(c,ps,false).replace('<div class="ig">','<div class="ig" id="po-ig">');
-  $('#po-list').innerHTML=open.map(p=>`<div class="appr" data-post="${p.id}"><div class="th v${p.v}"></div><div><div class="t">${esc(p.title)}</div><div class="s">${p.type} · ${dDE(p.date,{weekday:'long',day:'numeric',month:'long'})}</div></div><span class="btn sm primary">Ansehen</span></div>`).join('')||'<div style="color:var(--faint)">Aktuell nichts offen – alles freigegeben. Danke!</div>'}
+  $('#po-list').innerHTML=open.map(p=>`<div class="appr" data-post="${p.id}"><div class="th v${p.v}"></div><div><div class="t">${esc(p.title)}</div><div class="s">${p.type} · ${dDE(p.date,{weekday:'long',day:'numeric',month:'long'})}</div></div><span class="btn sm primary">Ansehen</span></div>`).join('')||'<div style="color:var(--faint)">Aktuell nichts offen – alles freigegeben. Danke!</div>';
+  // campaigns
+  const run=ks.filter(k=>['freigegeben','aktiv'].includes(k.status)),done=ks.filter(k=>k.status==='beendet'),chg=ks.filter(k=>k.status==='aenderung');
+  $('#po-camp-open').innerHTML=kopen.map(k=>campCard(k,true)).join('')+chg.map(k=>campCard(k,true)).join('')||'<div class="card" style="color:var(--faint);margin-bottom:8px">Keine Budget-Freigabe offen.</div>';
+  $('#po-camp-run').innerHTML=run.map(k=>campCard(k,true)).join('')+done.map(k=>campCard(k,true)).join('')||'<div class="card" style="color:var(--faint)">Noch keine laufenden Kampagnen.</div>';
+  const approved=sum(run,k=>k.budget),spent=sum(run,k=>k.spend),pend=sum(kopen,k=>k.budget);
+  $('#po-budget').innerHTML=`<div class="budget" style="margin-top:0"><div class="hl"><span>Freigegeben (laufend)</span><b class="num">${eur(approved)}</b></div><div><span>Davon ausgegeben</span><b class="num">${eur(spent)}</b></div><div><span>Zur Freigabe offen</span><b class="num" style="color:var(--warn)">${eur(pend)}</b></div><div><span>Ergebnisse laufend</span><b class="num">${sum(run,k=>k.res)}</b></div></div>
+    <div class="section-title">Freigabe-Protokoll</div><div class="po-sum">${ks.filter(k=>k.approval).sort((a,b)=>b.approval.at.localeCompare(a.approval.at)).map(k=>`<div class="ln"><span>${esc(k.name)}<br><small style="color:var(--muted)">${esc(k.approval.by)} · ${dDE(k.approval.at,{day:'numeric',month:'short',year:'numeric'})}</small></span><b class="num">${eur(k.approval.amount)}</b></div>`).join('')||'<div style="color:var(--faint);font-size:13px">Noch keine Freigaben.</div>'}</div>
+    <p style="font-size:12px;color:var(--faint);margin-top:14px">Mediabudget = Werbeausgaben an Meta/Google, abgerechnet über Wemedia. Freigaben werden mit Name und Datum protokolliert.</p>`}
+$('#po-tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b){poTab=b.dataset.t;rPortal()}});
 
 // ---------- grafik ----------
 function rGrafik(){const ps=S.posts.filter(p=>['briefing','produktion','aenderung'].includes(p.status)).sort((a,b)=>a.date.localeCompare(b.date));$('#gr-n').textContent=ps.length;
   $('#gr-list').innerHTML=ps.map(p=>`<div class="appr" data-post="${p.id}"><div class="th v${p.v}"></div><div><div class="t">${esc(cl(p.client).name)} · ${esc(p.title)}</div><div class="s">${p.type} · fällig ${dDE(shift(p.date,-6))} · ${S.briefs[p.id]?'Briefing vorhanden':'Briefing folgt'}${p.status==='aenderung'?' · <b style="color:var(--rose)">Kundenänderung</b>':''}</div></div><span class="pill ${stPill(p.status)}">${stName(p.status)}</span></div>`).join('')||'<div class="card" style="color:var(--faint)">Queue leer.</div>'}
 function rCrm(){const f=$('#crm-frame');if(f&&f.src==='about:blank')f.src='https://wemedia-crm.vercel.app/?embed=1';return;$('#crm-kpis').innerHTML=[['Offene Pipeline','€ 338,5k','15 Deals · € 175k gewichtet'],['Gewonnen Q4','€ 65,2k','26 % vom Ziel'],['Calls analysiert','5','Setter Ø 81 · Closer Ø 73'],['Übergabe offen','1','an Social Media Manager']].map(x=>`<div class="card kpi"><div class="k">${x[0]}</div><div class="v num">${x[1]}</div><div class="d">${x[2]}</div></div>`).join('')}
-function rPerf(){$('#pf-kpis').innerHTML=[['Aktive Kampagnen','23','Meta 17 · Google 6'],['Ad-Spend Oktober','€ 41,2k','über alle Kunden'],['Ø Cost per Lead','€ 18,40','−12 % vs. Sept.'],['Leads ins CRM','214','automatisch zugeordnet']].map(x=>`<div class="card kpi"><div class="k">${x[0]}</div><div class="v num">${x[1]}</div><div class="d">${x[2]}</div></div>`).join('')}
+function rPerf(){const akt=S.camps.filter(k=>k.status==='aktiv');$('#pf-kpis').innerHTML=[['Aktive Kampagnen',akt.length,`${akt.filter(k=>/Meta/.test(k.pf)).length} Meta · ${akt.filter(k=>/Google/.test(k.pf)).length} Google`],['Freigegebenes Budget',eur(sum(akt,k=>k.budget)),'laufende Kampagnen'],['Ausgegeben',eur(sum(akt,k=>k.spend)),`${Math.round(sum(akt,k=>k.spend)/Math.max(1,sum(akt,k=>k.budget))*100)} % der Budgets`],['Ø Cost per Result',eur(sum(akt,k=>k.spend)/Math.max(1,sum(akt,k=>k.res))),`${sum(akt,k=>k.res)} Leads / Termine / Verkäufe`]].map(x=>`<div class="card kpi"><div class="k">${x[0]}</div><div class="v num">${x[1]}</div><div class="d">${x[2]}</div></div>`).join('');
+  $('#pf-list').innerHTML=akt.length?`<div class="table-wrap"><table><thead><tr><th>Kunde</th><th>Kampagne</th><th>Plattform</th><th>Laufzeit</th><th>Budget</th><th>Ausgegeben</th><th>Ergebnisse</th><th>Ø Kosten</th></tr></thead><tbody>${akt.map(k=>`<tr data-camp="${k.id}"><td><b>${esc(cl(k.client).name)}</b></td><td>${esc(k.name)}</td><td style="color:var(--muted)">${k.pf}</td><td class="num" style="color:var(--muted)">${dDE(k.start)} – ${dDE(k.end)}</td><td class="num">${eur(k.budget)}</td><td class="num">${eur(k.spend)}</td><td class="num">${k.res} ${resLabel(k)}</td><td class="num">${eur(k.spend/Math.max(1,k.res))}</td></tr>`).join('')}</tbody></table></div>`:'<div class="card" style="color:var(--faint)">Keine aktiven Kampagnen.</div>'}
 
 // ---------- team ----------
 function rTeam(){const mods=MODULES.filter(m=>m.id!=='home');
@@ -542,23 +621,55 @@ function openPost(id){const p=post(id);if(!p)return;cur=p;const c=cl(p.client),r
   bind('act-plan',()=>{p.status='geplant';save();close();rAll();toast('Eingeplant · Veröffentlichung '+dDE(p.date))});
   bind('act-done',()=>{p.status='intern';p.comments.push({who:'Patrick',text:'Fertig – liegt zur internen Prüfung.',at:'Heute'});save();close();rAll();toast('Fertig markiert – interne Prüfung')});
   bind('act-brief',()=>{S.briefs[p.id]=briefingFor(p,'');if(p.status==='konzept')p.status='briefing';save();openPost(p.id);toast('Briefing generiert')});
-  bind('act-portal',()=>{close();planClient=p.client;location.hash='portal'});
+  bind('act-portal',()=>{close();planClient=p.client;poTab='posts';location.hash='portal'});
   bind('dr-send',()=>{const t=$('#dr-cmt').value.trim();if(!t)return;p.comments.push({who:role==='kunde'?'Kunde':me().user.name.split(' ')[0],text:t,at:'Heute'});save();openPost(p.id)});
 }
+function openCamp(id){const k=camp(id);if(!k)return;const c=cl(k.client),role=S.role,canEdit=role!=='kunde';const idx=CSTAT.findIndex(s=>s[0]===k.status);
+  $('#dr-title').textContent=k.name;$('#dr-sub').textContent=`${c.name} · Kampagne · ${k.pf} · ${dDE(k.start)} – ${dDE(k.end,{day:'numeric',month:'short',year:'numeric'})}`;
+  const steps=CSTAT.map((s,i)=>`<div class="${k.status==='aenderung'?(i<1?'done':i===1?'bad':''):i<idx?'done':i===idx?'cur':''}">${s[1]}</div>`).join('');
+  const d=cDays(k),act=['aktiv','beendet'].includes(k.status);
+  const budget=`<div class="budget"><div class="hl"><span>Mediabudget gesamt</span><b class="num">${eur(k.budget)}</b></div><div><span>Laufzeit</span><b class="num">${d} Tage</b></div><div><span>Ø pro Tag</span><b class="num">${eur(k.budget/d)}</b></div>${act?`<div><span>Bisher ausgegeben</span><b class="num">${eur(k.spend)}</b></div><div><span>${resLabel(k)}</span><b class="num">${k.res}</b></div><div><span>Kosten pro Ergebnis</span><b class="num">${eur(k.spend/Math.max(1,k.res))}</b></div>`:`<div><span>Ziel</span><b>${k.goal}</b></div>`}</div>`;
+  const creHtml=k.cre.map(t=>{const p=S.posts.find(x=>x.client===k.client&&x.title.toLowerCase().includes(t.toLowerCase()));return p?`<div class="row" data-post="${p.id}"><div class="th v${p.v}" style="width:36px;height:36px;border-radius:9px"></div><div><div class="t">${esc(p.title)}</div><div class="s">${p.type} · ${stName(p.status)}</div></div><span class="r pill">→</span></div>`:`<div class="row"><span class="co">▦</span><div><div class="t">${esc(t)}</div><div class="s">Creative folgt</div></div></div>`}).join('');
+  const form=canEdit?`<div class="field"><label>Kampagnenname</label><input id="ck-name" value="${esc(k.name)}"></div><div class="f-row"><div class="field"><label>Ziel</label><select id="ck-goal">${['Leads','Termine','Verkäufe','Reichweite'].map(g=>`<option ${k.goal===g?'selected':''}>${g}</option>`).join('')}</select></div><div class="field"><label>Plattform</label><select id="ck-pf">${['Meta','Google','Meta + Google','TikTok'].map(g=>`<option ${k.pf===g?'selected':''}>${g}</option>`).join('')}</select></div></div><div class="f-row"><div class="field"><label>Start</label><input id="ck-start" type="date" value="${k.start}"></div><div class="field"><label>Ende</label><input id="ck-end" type="date" value="${k.end}"></div></div><div class="field"><label>Mediabudget gesamt (€)</label><input id="ck-budget" type="number" min="50" step="50" value="${k.budget}"></div><div class="field"><label>Zielgruppe</label><input id="ck-aud" value="${esc(k.aud)}"></div>`
+    :`<div class="kv" style="margin:8px 0 4px"><span>Zielgruppe</span><b>${esc(k.aud)}</b><span>Plattform</span><b>${k.pf}</b><span>Betreut von</span><b>Meryem (Wemedia)</b></div>`;
+  $('#dr-body').innerHTML=`<div class="steps s5">${steps}</div>${k.approval?`<div class="okby">✓ Budget ${eur(k.approval.amount)} freigegeben von ${esc(k.approval.by)} am ${dDE(k.approval.at,{day:'numeric',month:'long',year:'numeric'})}</div>`:''}${budget}${form}
+    <div class="section-title">Creatives aus dem Redaktionsplan</div><div class="row-list">${creHtml||'<div style="color:var(--faint);font-size:13px">Noch keine Creatives zugeordnet.</div>'}</div>
+    ${role==='kunde'&&k.status==='freigabe'?`<label class="chk"><input type="checkbox" id="ck-ok"><span>Ich gebe das Mediabudget von <b>${eur(k.budget)}</b> für „${esc(k.name)}“ (${dDE(k.start)} – ${dDE(k.end)}) frei. Die Ausgaben laufen über Wemedia und werden mir in Rechnung gestellt.</span></label>`:''}
+    <div class="section-title">Kommentare & Feedback</div><div class="cmts">${k.comments.filter(x=>role!=='kunde'||x.who!=='Agent').map(x=>`<div class="cmt ${x.who==='Kunde'?'kunde':x.who==='Agent'?'ai':''}"><span class="avatar sm">${x.who==='Kunde'?c.name[0]:x.who==='Agent'?'✦':x.who.slice(0,2).toUpperCase()}</span><div><b>${esc(x.who==='Agent'?'Performance-Agent':x.who)}<small>${esc(x.at)}</small></b>${esc(x.text)}</div></div>`).join('')||'<div style="color:var(--faint);font-size:13px">Noch keine Kommentare.</div>'}</div>
+    <div class="cmt-in"><input id="dr-cmt" placeholder="${role==='kunde'?'Ihre Anmerkung …':'Kommentar …'}"><button class="btn primary" id="dr-send">Senden</button></div>`;
+  let foot='';
+  if(role==='kunde'){foot=k.status==='freigabe'?`<button class="btn primary" id="ca-approve">✓ Budget freigeben</button><button class="btn warn" id="ca-change">Änderung anfragen</button>`:`<span class="pill ${cPill(k.status)}" style="align-self:center">${cName(k.status)}</span>`}
+  else{foot=`<button class="btn primary" id="ca-save">Speichern</button>`+(['entwurf','aenderung'].includes(k.status)?`<button class="btn" id="ca-tofg">${k.status==='aenderung'?'Erneut zur Freigabe':'Zur Budget-Freigabe senden'}</button>`:'')+(k.status==='freigegeben'?`<button class="btn" id="ca-start">Kampagne starten</button>`:'')+(k.status==='aktiv'?`<button class="btn" id="ca-stop">Beenden</button>`:'')+`<button class="btn ghost" id="ca-portal" style="margin-left:auto">Kundenansicht</button>`}
+  $('#dr-foot').innerHTML=foot;$('#scrim').classList.add('open');$('#drawer').classList.add('open');
+  const bind=(id,fn)=>{const b=$('#'+id);if(b)b.onclick=fn};const nm=()=>me().user.name;
+  bind('ca-approve',()=>{if(!$('#ck-ok').checked){$('#ck-ok').focus();toast('Bitte die Budget-Freigabe bestätigen');return}k.status='freigegeben';k.approval={by:nm(),at:TODAY,amount:k.budget};k.comments.push({who:'Kunde',text:`Mediabudget ${eur(k.budget)} freigegeben ✓`,at:'Heute'});save();close();rAll();toast(`Budget ${eur(k.budget)} freigegeben – Wemedia startet die Kampagne`)});
+  bind('ca-change',()=>{const t=$('#dr-cmt').value.trim();if(!t){$('#dr-cmt').focus();toast('Bitte kurz beschreiben, was geändert werden soll (z. B. Budget, Laufzeit)');return}k.comments.push({who:'Kunde',text:t,at:'Heute'});k.status='aenderung';save();close();rAll();toast('Änderung angefragt – geht an Ihre Social-Media-Managerin')});
+  const readForm=()=>{k.name=$('#ck-name').value.trim()||k.name;k.goal=$('#ck-goal').value;k.pf=$('#ck-pf').value;k.start=$('#ck-start').value||k.start;k.end=$('#ck-end').value||k.end;k.budget=+$('#ck-budget').value||k.budget;k.aud=$('#ck-aud').value};
+  bind('ca-save',()=>{readForm();save();close();rAll();toast('Kampagne gespeichert')});
+  bind('ca-tofg',()=>{readForm();k.status='freigabe';k.approval=null;k.comments.push({who:nm().split(' ')[0],text:`Zur Budget-Freigabe gesendet: ${eur(k.budget)}, ${dDE(k.start)} – ${dDE(k.end)}.`,at:'Heute'});save();close();rAll();toast(`An ${c.name} zur Budget-Freigabe gesendet`)});
+  bind('ca-start',()=>{k.status='aktiv';k.spend=0;k.res=0;save();close();rAll();toast('Kampagne gestartet – Performance-Agent übernimmt Reporting')});
+  bind('ca-stop',()=>{k.status='beendet';save();close();rAll();toast('Kampagne beendet')});
+  bind('ca-portal',()=>{close();planClient=k.client;poTab='camps';location.hash='portal'});
+  bind('dr-send',()=>{const t=$('#dr-cmt').value.trim();if(!t)return;k.comments.push({who:role==='kunde'?'Kunde':nm().split(' ')[0],text:t,at:'Heute'});save();openCamp(k.id)});
+}
+document.addEventListener('click',e=>{const k=e.target.closest('[data-camp]');if(k&&!e.target.closest('[data-post]'))openCamp(k.dataset.camp)});
 function close(){$('#scrim').classList.remove('open');$('#drawer').classList.remove('open');$$('.modal').forEach(m=>m.classList.remove('open'))}
 function rAll(){route()}
 $('#dr-close').onclick=close;$('#scrim').onclick=close;
 document.addEventListener('click',e=>{const p=e.target.closest('[data-post]');if(p)openPost(p.dataset.post)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 // modals
-$$('[data-open]').forEach(b=>b.onclick=()=>{const k=b.dataset.open;if(k==='post'){$('#np-client').innerHTML=CLIENTS.map(c=>`<option value="${c.id}" ${c.id===planClient?'selected':''}>${esc(c.name)}</option>`).join('')}if(k==='user'){$('#nu-role').innerHTML=Object.entries(ROLES).map(([k,r])=>`<option value="${k}">${r.name}</option>`).join('')}$('#m-'+k).classList.add('open');$('#scrim').classList.add('open')});
+$$('[data-open]').forEach(b=>b.onclick=()=>{const k=b.dataset.open;if(k==='post'){$('#np-client').innerHTML=CLIENTS.map(c=>`<option value="${c.id}" ${c.id===planClient?'selected':''}>${esc(c.name)}</option>`).join('')}if(k==='camp'){$('#nc-client').innerHTML=CLIENTS.map(c=>`<option value="${c.id}" ${c.id===planClient?'selected':''}>${esc(c.name)}</option>`).join('')}if(k==='user'){$('#nu-role').innerHTML=Object.entries(ROLES).map(([k,r])=>`<option value="${k}">${r.name}</option>`).join('')}$('#m-'+k).classList.add('open');$('#scrim').classList.add('open')});
+$('#nc-save').onclick=()=>{const n=$('#nc-name').value.trim();if(!n){$('#nc-name').focus();return}const c=cl($('#nc-client').value);
+  S.camps.push({id:Date.now(),client:c.id,name:n,goal:$('#nc-goal').value,pf:$('#nc-pf').value,start:$('#nc-start').value||'2026-11-15',end:$('#nc-end').value||'2026-12-15',budget:+$('#nc-budget').value||1000,aud:$('#nc-aud').value.trim(),cre:$('#nc-cre').value.split(',').map(x=>x.trim()).filter(Boolean),status:'entwurf',comments:[{who:'Agent',text:'Entwurf angelegt. Empfehlung folgt, sobald Creatives zugeordnet sind.',at:'Heute'}]});
+  save();close();soTab='kampagnen';kaFilter='alle';location.hash='social';rSocial();toast('Kampagne angelegt – als Entwurf, noch nicht beim Kunden');$('#nc-name').value=$('#nc-aud').value=$('#nc-cre').value=''};
 $$('[data-close]').forEach(b=>b.onclick=close);
 $('#np-save').onclick=()=>{const t=$('#np-title').value.trim();if(!t){$('#np-title').focus();return}const c=cl($('#np-client').value);
   S.posts.push({id:Date.now(),client:c.id,title:t,type:$('#np-type').value,date:$('#np-date').value||'2026-11-20',pf:$('#np-pf').value,status:'konzept',v:Math.ceil(Math.random()*8),caption:$('#np-cap').value||captionFor(c,t),hashtags:'#'+c.handle.replace('.',''),comments:[]});
   save();close();planClient=c.id;soTab='plan';planMonth=($('#np-date').value||'2026-11').slice(0,7);if(!['2026-11','2026-12'].includes(planMonth))planMonth='2026-11';location.hash='social';rSocial();toast('Beitrag angelegt');$('#np-title').value=$('#np-cap').value=''};
 $('#nu-save').onclick=()=>{const n=$('#nu-name').value.trim();if(!n){$('#nu-name').focus();return}S.users.push({id:n.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(),name:n,email:$('#nu-email').value.trim(),role:$('#nu-role').value});save();close();rTeam();toast('Einladung gesendet (Demo)');$('#nu-name').value=$('#nu-email').value=''};
 $('#theme-btn').onclick=()=>{S.theme=S.theme==='light'?'dark':'light';document.documentElement.dataset.theme=S.theme;save()};
-const q=$('#q'),pop=$('#search-pop');if(q){q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();if(!v){pop.classList.remove('open');return}const cs=CLIENTS.filter(c=>c.name.toLowerCase().includes(v)).slice(0,4),ps=S.posts.filter(p=>p.title.toLowerCase().includes(v)).slice(0,6);pop.innerHTML=cs.map(c=>`<button data-client="${c.id}"><span class="co">${esc(c.name[0])}</span><span>${esc(c.name)}</span><span class="k">Kunde</span></button>`).join('')+ps.map(p=>`<button data-post="${p.id}"><span class="co">▦</span><span>${esc(p.title)} · ${esc(cl(p.client).name)}</span><span class="k">${stName(p.status)}</span></button>`).join('')||'<div style="padding:10px;color:var(--faint)">Nichts gefunden.</div>';pop.classList.add('open')});document.addEventListener('click',e=>{if(!e.target.closest('#search'))pop.classList.remove('open')});pop.addEventListener('click',()=>{pop.classList.remove('open');q.value=''});document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();q.focus()}})}
+const q=$('#q'),pop=$('#search-pop');if(q){q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();if(!v){pop.classList.remove('open');return}const cs=CLIENTS.filter(c=>c.name.toLowerCase().includes(v)).slice(0,4),ps=S.posts.filter(p=>p.title.toLowerCase().includes(v)).slice(0,6),ks=S.camps.filter(k=>k.name.toLowerCase().includes(v)).slice(0,4);pop.innerHTML=cs.map(c=>`<button data-client="${c.id}"><span class="co">${esc(c.name[0])}</span><span>${esc(c.name)}</span><span class="k">Kunde</span></button>`).join('')+ks.map(k=>`<button data-camp="${k.id}"><span class="co">€</span><span>${esc(k.name)} · ${esc(cl(k.client).name)}</span><span class="k">${cName(k.status)}</span></button>`).join('')+ps.map(p=>`<button data-post="${p.id}"><span class="co">▦</span><span>${esc(p.title)} · ${esc(cl(p.client).name)}</span><span class="k">${stName(p.status)}</span></button>`).join('')||'<div style="padding:10px;color:var(--faint)">Nichts gefunden.</div>';pop.classList.add('open')});document.addEventListener('click',e=>{if(!e.target.closest('#search'))pop.classList.remove('open')});pop.addEventListener('click',()=>{pop.classList.remove('open');q.value=''});document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();q.focus()}})}
 // init
 document.documentElement.dataset.theme=(S.theme==='dark')?'dark':'light';
 if(S.role){enter()}else{rLogin()}
