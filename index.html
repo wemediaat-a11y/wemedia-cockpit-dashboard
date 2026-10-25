@@ -377,6 +377,19 @@ td.r,th.r{text-align:right}
 .fdrop{display:block;border:1.5px dashed #0000001f;border-radius:12px;padding:12px;text-align:center;font-size:12.5px;color:var(--muted);cursor:pointer;transition:.15s}.fdrop:hover,.fdrop.over{border-color:var(--ink);background:var(--accent-soft);color:var(--ink)}
 #kp-av{overflow:hidden}
 .savebar{position:sticky;bottom:16px;margin-top:var(--gap);display:flex;gap:14px;align-items:center;background:var(--ink);color:#fff;border-radius:999px;padding:8px 18px 8px 8px;box-shadow:0 14px 40px #00000033;z-index:5}.savebar .btn{flex:none;white-space:nowrap}.savebar span{font-size:12.5px;color:#ffffffa6;line-height:1.35}
+
+/* onboarding form (public) */
+#onbform{min-height:100%;background:var(--page);padding:0 0 60px}.of-wrap{max-width:880px;margin:0 auto;padding:0 20px}
+.of-hero{background:var(--hero);color:#fff;border-radius:0 0 30px 30px;padding:32px 36px 30px;position:relative;isolation:isolate;overflow:hidden}.of-hero::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:repeating-linear-gradient(0deg,#cefb5630 0 1px,transparent 1px 36px),repeating-linear-gradient(90deg,#cefb5630 0 1px,transparent 1px 36px);-webkit-mask-image:radial-gradient(70% 90% at 85% 0%,#000 0%,transparent 70%);mask-image:radial-gradient(70% 90% at 85% 0%,#000 0%,transparent 70%)}
+.of-hero .brand{margin-bottom:22px}.of-hero h1{font-size:34px;margin:12px 0 8px;letter-spacing:-.02em}.of-hero p{color:#ffffffb0;max-width:620px;font-size:14.5px;line-height:1.5;margin:0 0 18px}.of-pills{display:flex;gap:8px}.of-pills .pill{background:#ffffff14;color:#fff}.of-pills .pill.lav{background:var(--lav);color:var(--lav-ink)}
+.of-progress{height:6px;border-radius:99px;background:#ffffff1f;overflow:hidden}.of-progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s var(--ease)}
+.of-body{background:var(--card);border-radius:26px;padding:26px 28px;margin-top:18px}.of-q{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid #00000010}.of-q:last-of-type{border-bottom:0}.of-q .n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:12.5px;font-weight:700;margin-top:2px}.of-q .field,.of-q .f-row{flex:1;margin-bottom:0}.of-q .field label small{font-weight:400;color:var(--faint)}
+.of-q input,.of-q textarea,.of-q select{background:#fff}.of-q textarea{min-height:72px}
+.of-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.of-chips button{border:1.5px solid transparent;background:#fff;border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink)}.of-chips button.on{background:var(--accent);border-color:var(--ink)}
+.of-foot{display:flex;gap:14px;align-items:center;padding-top:18px}.of-foot .btn{flex:none;white-space:nowrap}.of-hero{margin-top:0;padding-top:36px}.of-foot span{font-size:12.5px;color:var(--muted)}.of-done{text-align:center;padding:48px 28px}.of-done h2{font-size:26px;margin-bottom:8px}.of-done p{color:var(--muted)}
+#onbform .files{grid-template-columns:1fr 1fr}#onbform .fslot{background:#fff}#onbform .frow{background:var(--card)}
+/* onboarding mail composer */
+.onb-mail{margin-top:14px;padding-top:14px;border-top:1px solid #00000010}.onb-mail .st{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:12.5px;color:var(--muted)}.onb-mail .acts{display:flex;gap:8px;flex-wrap:wrap}.onb-mail .acts .btn{flex:none}.onb-mail textarea{min-height:170px;font-size:13px;line-height:1.45}.onb-mail .lnk{font-family:ui-monospace,monospace;font-size:11.5px;background:#fff;border-radius:10px;padding:8px 10px;word-break:break-all;color:var(--muted);margin-bottom:10px}
 </style>
 <!-- LOGIN / ROLLENWAHL -->
 </head>
@@ -392,6 +405,24 @@ td.r,th.r{text-align:right}
 </section>
 
 <!-- APP -->
+<section id="onbform" hidden>
+  <div class="of-wrap">
+    <div class="of-hero"><div class="brand"><img class="mark" src="icon.png" alt=""><span>WEMEDIA<small>ONBOARDING</small></span></div><div class="of-pills"><span class="pill lav">Kunden-Onboarding</span><span class="pill" id="of-client"></span></div><h1 id="of-title">Willkommen!</h1><p id="of-intro">8 kurze Fragen und eure Logo-Dateien – dauert etwa 10 Minuten. Alles, was ihr hier eingebt, wird direkt zum Markenprofil, mit dem wir eure Beiträge und Kampagnen erstellen.</p><div class="of-progress"><i id="of-bar"></i></div></div>
+    <form class="of-body" id="of-form" onsubmit="return false">
+      <div class="of-q"><span class="n">1</span><div class="field"><label>Wie würdet ihr euer Unternehmen in einem Satz beschreiben?</label><textarea id="of-pos" placeholder="z. B. Das Studio, in dem man sich nicht verstecken muss – Training für echte Menschen." required></textarea></div></div>
+      <div class="of-q"><span class="n">2</span><div class="field"><label>Wer ist eure Zielgruppe?</label><input id="of-aud" placeholder="Alter, Region, Situation – z. B. 25–45, berufstätig, Umkreis 20 km" required></div></div>
+      <div class="of-q"><span class="n">3</span><div class="field"><label>Wie soll eure Marke klingen?</label><div class="of-chips" id="of-tonechips"></div><input id="of-tone" placeholder="Eigene Worte dazu (optional)"></div></div>
+      <div class="of-q"><span class="n">4</span><div class="field"><label>Was soll auf jeden Fall gezeigt werden? <small>(durch Komma trennen)</small></label><input id="of-dos" placeholder="z. B. echte Mitglieder, unser Team, Angebote mit Deadline" required></div></div>
+      <div class="of-q"><span class="n">5</span><div class="field"><label>Was darf auf keinen Fall vorkommen?</label><input id="of-donts" placeholder="z. B. Stockfotos, Vorher/Nachher-Bilder, englische Buzzwords"></div></div>
+      <div class="of-q"><span class="n">6</span><div class="f-row"><div class="field"><label>Eure Markenfarben <small>(Hex-Codes, falls bekannt)</small></label><input id="of-colors" placeholder="#111111, #cefb56"></div><div class="field"><label>Hashtags / feste Begriffe</label><input id="of-tags" placeholder="#studio #graz"></div></div></div>
+      <div class="of-q"><span class="n">7</span><div class="field"><label>Was ist euer Ziel in den nächsten 3 Monaten?</label><input id="of-goal" placeholder="z. B. 15 Neukunden pro Monat, volle Kurse, mehr Anfragen über Instagram" required></div></div>
+      <div class="of-q"><span class="n">8</span><div class="f-row"><div class="field"><label>Wer gibt bei euch Beiträge frei?</label><input id="of-approver" placeholder="Name, E-Mail" required></div><div class="field"><label>Wie schnell schafft ihr Freigaben?</label><select id="of-speed"><option>innerhalb 24 h</option><option selected>innerhalb 2–3 Tagen</option><option>innerhalb einer Woche</option></select></div></div></div>
+      <div class="of-q"><span class="n">↑</span><div style="flex:1;min-width:0"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">Logo & Brand-Dateien</label><div class="files" id="of-files"></div><div style="font-size:12px;color:var(--faint);margin-top:8px">Vektor-Logo (SVG/PDF/AI) ist am wichtigsten. Fotos von euch, eurem Team und eurem Standort gerne gleich mit hochladen.</div></div></div>
+      <div class="of-foot"><button class="btn primary" id="of-submit" type="submit">Absenden – Markenprofil anlegen</button><span>Nach dem Absenden meldet sich eure Social-Media-Managerin mit den ersten Konzepten.</span></div>
+    </form>
+    <div class="of-body of-done" id="of-done" hidden><h2>Danke! Alles angekommen. ✓</h2><p>Euer Markenprofil ist angelegt. Wir melden uns in Kürze mit den ersten Beitrags-Konzepten zur Freigabe.</p></div>
+  </div>
+</section>
 <div id="app" hidden><div class="shell">
 <aside class="side">
   <a class="brand" href="#home"><img class="mark" src="icon.png" alt=""><span>WEMEDIA<small>CREATE · ADVERTISE · PERFORM</small></span></a>
@@ -669,7 +700,7 @@ function rHome(){const m=me();const fg=S.posts.filter(p=>p.status==='freigabe').
   const al=$('#home-alert');if(low.length&&S.access[S.role].includes('social')){al.hidden=false;al.innerHTML=`⚠ ${low.length} Kunden sind für ${MON0} unter 50 % geplant: ${low.slice(0,3).map(c=>c.name).join(', ')}${low.length>3?' + '+(low.length-3)+' weitere':''} <button class="link" data-go="social:kunden">Redaktionspläne →</button>`}else al.hidden=true;
   const ko=S.camps.filter(x=>['freigabe','aenderung'].includes(x.status));
   $('#mods').innerHTML=MODULES.filter(x=>x.id!=='home'&&!(x.admin&&S.role!=='admin')).map(x=>{const ok=S.access[S.role].includes(x.id);return `<div class="card mod ${ok?'':'locked'} ${x.soon?'locked':''}" ${ok&&!x.soon?`data-go="${x.id}"`:''}><div class="ic">${x.icon}</div><h3>${x.name}</h3><p>${x.desc}</p><div class="st">${x.soon?'<span class="pill">In Planung</span>':ok?'<span class="pill good">Aktiv</span>':'<span class="pill">Kein Zugriff</span>'}${x.ext?`<span class="ext">${x.ext}</span>`:''}</div></div>`}).join('');
-  const today=[...openTasks().map(t=>[t.title,t.sub,'crm']),...(S.tasks||[]).filter(t=>t.done&&t.doneAt===TODAY&&(S.role==='admin'||t.for===S.role)).map(t=>[t.doneText||('✓ '+t.title),'Erledigt · heute','crm']),...onbOpen().map(c=>[`${c.name} · Onboarding offen`,'Social · Markenprofil bestätigen, Zugänge einholen','social:kunden']),[`${fg} Beiträge warten auf Kundenfreigabe`,'Social · Erinnerung an Kunden senden','social'],[`${ko.length} Kampagnen warten auf Budget-Freigabe`,'Social · '+ko.map(x=>cl(x.client).name).slice(0,2).join(', '),'social']];
+  const today=[...openTasks().map(t=>[t.title,t.sub,t.go||'crm']),...(S.tasks||[]).filter(t=>t.done&&t.doneAt===TODAY&&(S.role==='admin'||t.for===S.role)).map(t=>[t.doneText||('✓ '+t.title),'Erledigt · heute','crm']),...onbOpen().map(c=>[`${c.name} · Onboarding offen`,'Social · Markenprofil bestätigen, Zugänge einholen','social:kunden']),[`${fg} Beiträge warten auf Kundenfreigabe`,'Social · Erinnerung an Kunden senden','social'],[`${ko.length} Kampagnen warten auf Budget-Freigabe`,'Social · '+ko.map(x=>cl(x.client).name).slice(0,2).join(', '),'social']];
   $('#home-today').innerHTML=today.filter(t=>S.access[S.role].includes(t[2].split(':')[0])&&!/^0 /.test(t[0])).map(t=>`<div class="row" data-go="${t[2]}"><span class="co">${t[2][0].toUpperCase()}</span><div><div class="t">${t[0]}</div><div class="s">${t[1]}</div></div><span class="r pill">→</span></div>`).join('')||'<div class="s" style="color:var(--faint)">Nichts offen.</div>';
   const nC=openSugg(x=>x.agent==='Content-Agent').length,nP=openSugg(x=>x.agent==='Performance-Agent').length;$('#home-agents').innerHTML=[['Sales-Agent',(S.crmStats||{}).callsToday?`${S.crmStats.callsToday} Calls analysiert heute`:'bereit – wartet auf den ersten Call','good',null],['Content-Agent',`${nC} Vorschläge warten auf Entscheidung`,nC?'warn':'good','social:vorschlaege'],['Grafik-Agent',`${S.posts.filter(p=>['briefing','produktion'].includes(p.status)).length} Entwürfe in Queue`,'good',null],['Performance-Agent',`${S.camps.filter(k=>k.status==='aktiv').length} Kampagnen aktiv · ${nP} Budget-Empfehlungen`,nP?'warn':'good','performance']].map(a=>`<div class="row" ${a[3]&&S.access[S.role].includes(a[3].split(':')[0])?`data-go="${a[3]}" style="cursor:pointer"`:''}><span class="co" style="background:var(--accent-soft);color:var(--ink)">✦</span><div><div class="t">${a[0]}</div><div class="s">${a[1]}</div></div><span class="r pill ${a[2]}">${a[2]==='good'?'läuft':a[2]==='warn'?'wartet auf dich':'bald'}</span></div>`).join('')}
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){const [v,t]=g.dataset.go.split(':');if(v==='social'&&t==='plan'){kpTab='plan';profClient=planClient;location.hash='kunde';if(location.hash==='#kunde')route();return}if(v==='social'&&t==='kampagnen'){location.hash='performance';return}location.hash=v;if(t){soTab=t;setTimeout(rSocial,0)}}});
@@ -819,9 +850,72 @@ function rFiles(c,b){const fs=b.files||[];$('#kp-files-n').textContent=fs.length
   $$('#kp-files input[type=file]').forEach(inp=>inp.onchange=()=>addFiles(c,b,inp.dataset.fkind,[...inp.files]));
   $$('#kp-files .fdrop').forEach(z=>{z.ondragover=e=>{e.preventDefault();z.classList.add('over')};z.ondragleave=()=>z.classList.remove('over');z.ondrop=e=>{e.preventDefault();z.classList.remove('over');addFiles(c,b,z.querySelector('input').dataset.fkind,[...e.dataTransfer.files])}});
   $$('#kp-files [data-fdel]').forEach(x=>x.onclick=()=>{if(!confirm('Datei aus dem Markenprofil entfernen?'))return;b.files=b.files.filter(f=>f.id!==+x.dataset.fdel);save();rKunde();toast('Datei entfernt')})}
-function addFiles(c,b,kind,files){if(!files.length)return;const total=(b.files||[]).reduce((a,f)=>a+f.size,0);let added=0,skipped=[];let chain=Promise.resolve();
+function addFiles(c,b,kind,files,after){if(!files.length)return;const total=(b.files||[]).reduce((a,f)=>a+f.size,0);let added=0,skipped=[];let chain=Promise.resolve();
   files.forEach(f=>{chain=chain.then(()=>new Promise(res=>{if(f.size>FMAX){skipped.push(f.name+' (max. 2 MB im Prototyp)');return res()}if(total+f.size>FTOTAL){skipped.push(f.name+' (Speicher im Prototyp voll – in der echten App unbegrenzt)');return res()}const r=new FileReader();r.onload=()=>{const multi=FSLOTS.find(s=>s[0]===kind)[4];if(!multi)b.files=b.files.filter(x=>x.kind!==kind);b.files.push({id:Date.now()+Math.floor(Math.random()*1e4),kind,name:f.name,type:f.type||'',size:f.size,data:r.result,at:dDE(TODAY),by:me().user.name});added++;res()};r.onerror=()=>{skipped.push(f.name);res()};r.readAsDataURL(f)}))});
-  chain.then(()=>{if(added){if(b.files.some(f=>f.kind==='logo-vec'||f.kind==='logo-png')&&!b.proposal)b.onb.brand=true;learn(c.id,`${added} Brand-Datei${added>1?'en':''} hinterlegt (${FSLOTS.find(s=>s[0]===kind)[1]}) – Grafik-Agent nutzt ab jetzt die Original-Dateien`,'Markenprofil');try{save()}catch(e){toast('Speicher voll – Datei konnte nicht gesichert werden');b.files.pop();return}rKunde();toast(`${added} Datei${added>1?'en':''} im Markenprofil hinterlegt`)}if(skipped.length)toast('Nicht übernommen: '+skipped.join(', '),6000)})}
+  chain.then(()=>{if(added){if(b.files.some(f=>f.kind==='logo-vec'||f.kind==='logo-png')&&!b.proposal)b.onb.brand=true;if(!after)learn(c.id,`${added} Brand-Datei${added>1?'en':''} hinterlegt (${FSLOTS.find(s=>s[0]===kind)[1]}) – Grafik-Agent nutzt ab jetzt die Original-Dateien`,'Markenprofil');try{save()}catch(e){toast('Speicher voll – Datei konnte nicht gesichert werden');b.files.pop();return}(after||rKunde)();toast(`${added} Datei${added>1?'en':''} im Markenprofil hinterlegt`)}if(skipped.length)toast('Nicht übernommen: '+skipped.join(', '),6000)})}
+
+// ---------- Kunden-Onboarding-Formular + Mail ----------
+const onbLink=c=>location.origin+location.pathname+'#onboarding/'+c.id;
+function onbMailDefault(c,b){const to=(c.firma&&c.firma.email)||(S.users.find(u=>u.client===c.id)||{}).email||'';const first=(c.contact||'').split(' ')[0];
+  return {to,subject:`Willkommen bei WEMEDIA – euer Onboarding für ${c.name}`,body:`Hallo ${first||'zusammen'},
+
+schön, dass wir ab jetzt zusammenarbeiten! Damit wir sofort loslegen können, brauchen wir noch ein paar Infos zu eurer Marke – dafür haben wir ein kurzes Formular vorbereitet:
+
+${onbLink(c)}
+
+Darin könnt ihr:
+• 8 kurze Fragen zu Positionierung, Zielgruppe und Tonalität beantworten
+• Logo (am besten als Vektor), CI/CD-Manual und Fotos direkt hochladen
+
+Dauert etwa 10 Minuten. Sobald es ausgefüllt ist, bekommt ihr von mir die ersten Beitrags-Konzepte zur Freigabe.
+
+Bei Fragen einfach melden.
+
+Liebe Grüße
+${me().user.name}
+WEMEDIA · Social Media`}}
+function onbMailHtml(c,b){const f=b.onbForm||{};const st=f.doneAt?`<span class="pill good">Formular ausgefüllt · ${esc(f.doneAt)}</span>`:f.sentAt?`<span class="pill warn">Gesendet ${esc(f.sentAt)} an ${esc(f.to)} · wartet auf Antwort</span>`:`<span class="pill">Noch nicht gesendet</span>`;
+  const d=f.draft||onbMailDefault(c,b);
+  return `<div class="onb-mail"><div class="section-title" style="margin-top:0">Onboarding-Formular an Kunden</div><div class="st">${st}${f.sentAt&&!f.doneAt?`<button class="btn sm" id="om-remind">Erinnerung senden</button>`:''}</div>
+  <div class="lnk" id="om-link">${esc(onbLink(c))}</div>
+  <div class="field"><label>An</label><input id="om-to" value="${esc(d.to)}" placeholder="E-Mail des Kunden"></div><div class="field"><label>Betreff</label><input id="om-subject" value="${esc(d.subject)}"></div><div class="field"><label>Nachricht <small style="font-weight:400;color:var(--faint)">(frei anpassbar – Link bleibt drin)</small></label><textarea id="om-body">${esc(d.body)}</textarea></div>
+  <div class="acts"><button class="btn primary sm" id="om-send">${f.sentAt?'Erneut senden':'E-Mail senden'}</button><button class="btn sm" id="om-copy">Link kopieren</button><button class="btn sm" id="om-preview">Formular ansehen</button><button class="btn sm" id="om-reset" title="Text auf Vorlage zurücksetzen">Vorlage</button></div>
+  <div style="font-size:11.5px;color:var(--faint);margin-top:8px">Prototyp: öffnet die Mail in deinem Mailprogramm. In der echten App geht sie automatisch über den Wemedia-Mailserver raus und der Link ist nur mit Token gültig.</div></div>`}
+function bindOnbMail(c,b){const g=id=>$('#'+id);if(!g('om-send'))return;const read=()=>({to:g('om-to').value.trim(),subject:g('om-subject').value,body:g('om-body').value});
+  const persistDraft=()=>{b.onbForm=b.onbForm||{};b.onbForm.draft=read();save()};['om-to','om-subject','om-body'].forEach(id=>g(id).addEventListener('change',persistDraft));
+  g('om-send').onclick=()=>{const d=read();if(!d.to||!/@/.test(d.to)){g('om-to').focus();toast('Bitte E-Mail-Adresse des Kunden eintragen');return}if(!d.body.includes(onbLink(c))){toast('Der Formular-Link fehlt in der Nachricht – bitte wieder einfügen oder „Vorlage“ klicken');return}
+    b.onbForm=Object.assign(b.onbForm||{},{draft:d,sentAt:dDE(TODAY),to:d.to,sentBy:me().user.name});learn(c.id,'Onboarding-Formular an '+d.to+' gesendet','Onboarding');save();
+    window.open(`mailto:${encodeURIComponent(d.to)}?subject=${encodeURIComponent(d.subject)}&body=${encodeURIComponent(d.body)}`,'_self');rKunde();toast('Onboarding-Mail an '+d.to+' geöffnet – Status: gesendet')};
+  const rm=g('om-remind');if(rm)rm.onclick=()=>{const d=read();const body=`Hallo ${(c.contact||'').split(' ')[0]||'zusammen'},\n\nkurze Erinnerung: unser Onboarding-Formular wartet noch auf euch – dauert nur 10 Minuten:\n\n${onbLink(c)}\n\nDanke & liebe Grüße\n${me().user.name}`;b.onbForm.remindedAt=dDE(TODAY);save();window.open(`mailto:${encodeURIComponent(d.to)}?subject=${encodeURIComponent('Erinnerung: '+d.subject)}&body=${encodeURIComponent(body)}`,'_self');toast('Erinnerung geöffnet')};
+  g('om-copy').onclick=async()=>{try{await navigator.clipboard.writeText(onbLink(c));toast('Link kopiert')}catch(e){toast('Link: '+onbLink(c),6000)}};
+  g('om-preview').onclick=()=>window.open(onbLink(c),'_blank');
+  g('om-reset').onclick=()=>{if(b.onbForm)delete b.onbForm.draft;save();rKunde()}}
+const TONES=['Locker & Du','Seriös & Sie','Motivierend','Humorvoll','Premium','Bodenständig','Fachlich & erklärend'];
+let ofTones=[];
+function openOnbForm(){const id=+location.hash.split('/')[1];const c=cl(id);$('#login').hidden=true;$('#app').hidden=true;const sec=$('#onbform');sec.hidden=false;document.title='Onboarding · WEMEDIA';
+  if(!c){$('#of-form').hidden=true;$('#of-done').hidden=false;$('#of-done').innerHTML='<h2>Link ungültig</h2><p>Dieses Onboarding-Formular ist nicht (mehr) aktiv. Bitte meldet euch bei eurer Ansprechperson bei WEMEDIA.</p>';return}
+  const b=brand(c.id);$('#of-client').textContent=c.name;$('#of-title').textContent=`Willkommen, ${c.name}!`;
+  if(b.onbForm&&b.onbForm.doneAt){$('#of-form').hidden=true;$('#of-done').hidden=false;return}
+  $('#of-form').hidden=false;$('#of-done').hidden=true;
+  // Vorbefüllung aus Markenprofil-Vorschlag
+  const v=(id,val)=>{const el=$('#'+id);if(el&&!el.value)el.value=val||''};v('of-pos',b.proposal?'':b.pos);v('of-aud',b.aud);v('of-colors',(b.colors||[]).join(', '));v('of-tags',b.tags);v('of-goal',c.goal);v('of-approver',[c.contact,(c.firma||{}).email].filter(Boolean).join(', '));
+  $('#of-tonechips').innerHTML=TONES.map(t=>`<button type="button" class="${ofTones.includes(t)?'on':''}" data-tone="${t}">${t}</button>`).join('');$$('#of-tonechips button').forEach(x=>x.onclick=()=>{const t=x.dataset.tone;ofTones=ofTones.includes(t)?ofTones.filter(y=>y!==t):[...ofTones,t];x.classList.toggle('on')});
+  rOfFiles(c,b);
+  const prog=()=>{const ids=['of-pos','of-aud','of-dos','of-goal','of-approver'];const n=ids.filter(i=>$('#'+i).value.trim()).length+(ofTones.length||$('#of-tone').value?1:0)+((b.files||[]).length?1:0)+($('#of-donts').value||$('#of-colors').value?1:0);$('#of-bar').style.width=Math.round(n/8*100)+'%'};$('#of-form').oninput=prog;prog();
+  $('#of-submit').onclick=()=>{const req=['of-pos','of-aud','of-dos','of-goal','of-approver'].filter(i=>!$('#'+i).value.trim());if(req.length){$('#'+req[0]).focus();toast('Bitte alle Pflichtfelder ausfüllen ('+req.length+' fehlen)');return}
+    const split=s=>s.split(',').map(x=>x.trim()).filter(Boolean);
+    b.pos=$('#of-pos').value.trim();b.aud=$('#of-aud').value.trim();b.tone=[...ofTones,$('#of-tone').value.trim()].filter(Boolean).join('. ')+(ofTones.length?'.':'');const dos=split($('#of-dos').value),donts=split($('#of-donts').value);if(dos.length)b.dos=dos;if(donts.length)b.donts=donts;const cols=split($('#of-colors').value).filter(x=>/^#?[0-9a-f]{3,8}$/i.test(x)).map(x=>x.startsWith('#')?x:'#'+x);if(cols.length)b.colors=cols;if($('#of-tags').value.trim())b.tags=$('#of-tags').value.trim();
+    c.goal=$('#of-goal').value.trim();const ap=$('#of-approver').value.trim();b.proposal=null;b.onb.brand=true;
+    learn(c.id,`Vom Kunden ausgefüllt: Ziel „${c.goal}“ · Freigaben durch ${ap} (${$('#of-speed').value})`,'Onboarding-Formular');if(b.files.length)learn(c.id,`${b.files.length} Brand-Datei${b.files.length>1?'en':''} vom Kunden hochgeladen`,'Onboarding-Formular');
+    b.onbForm=Object.assign(b.onbForm||{},{doneAt:dDE(TODAY),approver:ap,speed:$('#of-speed').value});
+    S.tasks=S.tasks||[];S.tasks.unshift({id:Date.now(),kind:'onbform',clientId:c.id,title:`${c.name} hat das Onboarding-Formular ausgefüllt`,sub:'Social · Markenprofil prüfen, erste Konzepte freigeben',for:'smm',go:'social:kunden',done:false,at:TODAY});
+    try{save()}catch(e){toast('Speicher voll – bitte kleinere Dateien hochladen');return}
+    $('#of-form').hidden=true;$('#of-done').hidden=false;window.scrollTo({top:0})}}
+function rOfFiles(c,b){const fs=b.files||[];const slots=FSLOTS.filter(s=>s[0]!=='fonts');
+  $('#of-files').innerHTML=slots.map(([k,t,d,acc,multi])=>{const list=fs.filter(f=>f.kind===k);return `<div class="fslot ${list.length?'has':''}" data-kind="${k}"><div class="fh"><b>${k==='assets'?'Fotos & weitere Dateien':t}</b><span>${k==='assets'?'Team, Standort, Produkte – gerne mehrere':d}</span></div>${list.map(f=>`<div class="frow"><span class="fp">${/^image\//.test(f.type)||/svg/.test(f.type)?`<img src="${f.data}" alt="">`:`<span class="ext">${esc((f.name.split('.').pop()||'').toUpperCase().slice(0,4))}</span>`}</span><div class="fn"><b>${esc(f.name)}</b><span>${fmtB(f.size)}</span></div><button class="btn sm" type="button" data-fdel="${f.id}">✕</button></div>`).join('')}${(!list.length||multi)?`<label class="fdrop"><input type="file" accept="${acc}" ${multi?'multiple':''} data-fkind="${k}" hidden><span>+ ${list.length?'weitere Datei':'Datei'} hochladen oder hierher ziehen</span></label>`:''}</div>`}).join('');
+  $$('#of-files input[type=file]').forEach(inp=>inp.onchange=()=>addFiles(c,b,inp.dataset.fkind,[...inp.files],()=>rOfFiles(c,b)));
+  $$('#of-files .fdrop').forEach(z=>{z.ondragover=e=>{e.preventDefault();z.classList.add('over')};z.ondragleave=()=>z.classList.remove('over');z.ondrop=e=>{e.preventDefault();z.classList.remove('over');addFiles(c,b,z.querySelector('input').dataset.fkind,[...e.dataTransfer.files],()=>rOfFiles(c,b))}});
+  $$('#of-files [data-fdel]').forEach(x=>x.onclick=()=>{b.files=b.files.filter(f=>f.id!==+x.dataset.fdel);save();rOfFiles(c,b)})}
 // ---------- meine freigaben (admin) ----------
 function rMine(){const items=myInbox();$('#mi-n').textContent=items.length+' offen';
   $('#mi-list').innerHTML=items.map(it=>{if(it.kind==='offer'){const t=it.t;return `<div class="appr" data-offer="${t.dealId}"><div class="th" style="display:grid;place-items:center;font-weight:700;color:#fff;background:var(--hero)">€</div><div><div class="t">${esc(t.title)}</div><div class="s">${esc(t.sub)}</div></div><span class="btn sm primary">Angebot anlegen</span></div>`}
@@ -832,7 +926,7 @@ function rMine(){const items=myInbox();$('#mi-n').textContent=items.length+' off
   $('#mi-client').innerHTML=inboxItems().map(it=>inboxRow(it,false)).join('')||'<div class="card" style="color:var(--faint)">Nichts offen beim Kunden.</div>'}
 document.addEventListener('click',e=>{const o=e.target.closest('[data-offer]');if(o){crmSub='pipeline';location.hash='crm';setTimeout(()=>{const f=$('#crm-frame');if(f&&f.contentWindow)f.contentWindow.postMessage({type:'wemedia.openOffer',dealId:+o.dataset.offer},'*')},900)}});
 // ---------- kundenprofil ----------
-function rKunde(){const c=cl(profClient)||allClients()[0];if(!c){location.hash='social';return}profClient=c.id;const b=brand(c.id),ps=S.posts.filter(p=>p.client===c.id),ks=S.camps.filter(k=>k.client===c.id);const u=S.users.find(x=>x.client===c.id);
+function rKunde(){const c=cl(profClient)||allClients()[0];if(!c){location.hash='social';return}profClient=c.id;{const t=(S.tasks||[]).find(x=>x.kind==='onbform'&&x.clientId===c.id&&!x.done);if(t&&S.role!=='kunde'){t.done=true;t.doneAt=TODAY;t.doneText='✓ Onboarding-Formular von '+c.name+' geprüft';save();updateBell()}}const b=brand(c.id),ps=S.posts.filter(p=>p.client===c.id),ks=S.camps.filter(k=>k.client===c.id);const u=S.users.find(x=>x.client===c.id);
   $('#kp-av').textContent=c.name[0];$('#kp-name').textContent=c.name;$('#kp-sub').textContent=`@${c.handle} · ${c.branche} · ${c.pf.join(' / ')} · ${c.soll} Beiträge/Monat · Ansprechperson ${CONTACT[c.id]||c.contact||'—'}`+(c.fromDeal?` · aus CRM: „${c.fromDeal.title}“ (${seesFees()?eur(c.fromDeal.value)+', ':''}gewonnen ${dDE(c.fromDeal.wonAt)})`:'')+(b.adBudget?` · Ad-Spend ${eur(b.adBudget)}/Monat`:'');
   const lg=brandLogo(c.id);$('#kp-av').innerHTML=lg?`<img src="${lg.data}" alt="" style="width:100%;height:100%;object-fit:contain;padding:8px;background:#fff;border-radius:inherit">`:esc(c.name[0]);
   $('#kp-actions').innerHTML=`<button class="btn" id="kp-portal">Kundenansicht</button><button class="btn primary" data-open="post">+ Beitrag</button>`;
@@ -854,7 +948,7 @@ function rKunde(){const c=cl(profClient)||allClients()[0];if(!c){location.hash='
   const f=c.firma;const firmaHtml=f?`<div class="section-title" style="margin-top:0">Firmendaten (aus CRM)</div><div class="kv" style="margin-bottom:14px"><span>Firma</span><b>${esc(f.legal||c.name)}${f.uid?' · '+esc(f.uid):''}</b><span>Adresse</span><b>${esc([f.street,f.nr].filter(Boolean).join(' '))}${f.zip||f.city?', '+esc([f.zip,f.city].filter(Boolean).join(' ')):''}</b><span>Kontakt</span><b>${esc(f.contact||c.contact||'—')}${f.role?' ('+esc(f.role)+')':''}</b><span>E-Mail / Tel.</span><b>${esc(f.email||'—')} · ${esc(f.phone||'—')}</b>${f.web?`<span>Web</span><b>${esc(f.web)}</b>`:''}${c.goal?`<span>Ziel</span><b>${esc(c.goal)}</b>`:''}${b.adBudget?`<span>Ad-Spend</span><b>${eur(b.adBudget)} / Monat</b>`:''}</div>`:'';
   $('#kp-team').innerHTML=firmaHtml+`<div class="kv"><span>Social Media</span><b>Meryem Reischer</b><span>Grafik</span><b>Patrick</b><span>Performance</span><b>Camillo + Agent</b><span>Kunde</span><b>${esc(CONTACT[c.id]||c.contact||'—')}</b><span>Portal-Login</span><b>${u?esc(u.email):'<span style="color:var(--warn)">noch nicht eingerichtet</span>'}</b></div><div class="section-title">Zugänge</div><div class="chips"><i class="${b.onb.meta?'yes':'no'}">Meta Business ${b.onb.meta?'✓':'fehlt'}</i><i class="${b.onb.google?'yes':'no'}">Google Ads ${b.onb.google?'✓':'fehlt'}</i><i class="${b.onb.login?'yes':'no'}">Kundenportal ${b.onb.login?'✓':'fehlt'}</i></div>`;
   const done=ONB.filter(o=>b.onb[o[0]]).length;$('#kp-onb').textContent=`${done} / ${ONB.length}`;$('#kp-onb').className='pill '+(done===ONB.length?'good':'warn');
-  $('#kp-onboard').innerHTML=ONB.map(o=>`<label class="${b.onb[o[0]]?'ok':''}"><input type="checkbox" data-onb="${o[0]}" ${b.onb[o[0]]?'checked':''}>${o[1]}</label>`).join('');
+  $('#kp-onboard').innerHTML=ONB.map(o=>`<label class="${b.onb[o[0]]?'ok':''}"><input type="checkbox" data-onb="${o[0]}" ${b.onb[o[0]]?'checked':''}>${o[1]}</label>`).join('')+onbMailHtml(c,b);bindOnbMail(c,b);
 }
 $('#kp-tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b){kpTab=b.dataset.t;rKunde()}});
 document.addEventListener('change',e=>{const i=e.target.closest('[data-onb]');if(i){brand(profClient).onb[i.dataset.onb]=i.checked;save();rKunde()}});
@@ -949,7 +1043,8 @@ $('#nu-save').onclick=()=>{const n=$('#nu-name').value.trim();if(!n){$('#nu-name
 const q=$('#q'),pop=$('#search-pop');if(q){q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();if(!v){pop.classList.remove('open');return}const cs=allClients().filter(c=>c.name.toLowerCase().includes(v)).slice(0,4),ps=S.posts.filter(p=>p.title.toLowerCase().includes(v)).slice(0,6),ks=S.camps.filter(k=>k.name.toLowerCase().includes(v)).slice(0,4);pop.innerHTML=cs.map(c=>`<button data-client="${c.id}"><span class="co">${esc(c.name[0])}</span><span>${esc(c.name)}</span><span class="k">Kunde</span></button>`).join('')+ks.map(k=>`<button data-camp="${k.id}"><span class="co">€</span><span>${esc(k.name)} · ${esc(cl(k.client).name)}</span><span class="k">${cName(k.status)}</span></button>`).join('')+ps.map(p=>`<button data-post="${p.id}"><span class="co">▦</span><span>${esc(p.title)} · ${esc(cl(p.client).name)}</span><span class="k">${stName(p.status)}</span></button>`).join('')||'<div style="padding:10px;color:var(--faint)">Nichts gefunden.</div>';pop.classList.add('open')});document.addEventListener('click',e=>{if(!e.target.closest('#search'))pop.classList.remove('open')});pop.addEventListener('click',()=>{pop.classList.remove('open');q.value=''});document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();q.focus()}})}
 // init
 document.documentElement.dataset.theme='light';
-if(S.role){enter()}else{rLogin()}
+if(location.hash.startsWith('#onboarding/')){openOnbForm()}else if(S.role){enter()}else{rLogin()}
+window.addEventListener('hashchange',()=>{if(location.hash.startsWith('#onboarding/'))openOnbForm()});
 </script>
 
 </body>
