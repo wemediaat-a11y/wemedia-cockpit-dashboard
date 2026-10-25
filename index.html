@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23c2ec86'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial' font-weight='800' font-size='18' fill='%2300343f'%3EW%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="favicon.png">
 <style>img{max-width:100%}[hidden]{display:none!important}</style>
 <title>WEMEDIA Cockpit</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap">
@@ -59,7 +59,7 @@ svg.i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .shell{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100%}
 .side{background:linear-gradient(180deg,var(--side-a),var(--side-b));color:var(--side-ink);padding:22px 16px 20px max(16px,env(safe-area-inset-left,0px));position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;scrollbar-width:thin}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.12em;font-size:16px;text-decoration:none;color:#fff;padding:0 8px}
-.brand .mark{width:30px;height:30px;border-radius:9px;background:var(--accent);display:grid;place-items:center;color:var(--on-accent);font-weight:800;font-size:14px;letter-spacing:0}
+.brand .mark{width:32px;height:32px;border-radius:0;background:none;display:block;object-fit:contain}
 .brand small{display:block;font-weight:500;letter-spacing:.14em;font-size:8.5px;color:#ffffff8c;margin-top:1px}
 .rolepill{margin:14px 8px 10px;display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:99px;border:1px solid #ffffff2e;font-size:11px;letter-spacing:.12em;font-weight:600;text-transform:uppercase;color:#fff}
 .rolepill::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
@@ -290,13 +290,16 @@ td.r,th.r{text-align:right}
 .eyebrow{background:var(--lav);color:var(--lav-ink)}
 .topbar .btn.primary{box-shadow:0 8px 24px -10px #cefb56cc}
 .modal .box,.drawer{background:#fff!important}
+
+/* production board contrast */
+.board{gap:12px}.col{background:var(--card);border:0;padding:12px;gap:8px}.pcard{background:#fff;border-radius:14px}.col-head .cnt{background:#141416;color:#fff}
 </style>
 <!-- LOGIN / ROLLENWAHL -->
 </head>
 <body>
 <section id="login">
   <div class="login-box">
-    <div class="brand"><span class="mark">W</span><span>WEMEDIA<small>COCKPIT · CREATE · ADVERTISE · PERFORM</small></span></div>
+    <div class="brand"><img class="mark" src="icon.png" alt=""><span>WEMEDIA<small>COCKPIT · CREATE · ADVERTISE · PERFORM</small></span></div>
     <p>Ein Login, ein Dashboard – jede Rolle sieht nur ihre Module. Demo: Rolle wählen.</p>
     <div class="roles" id="roles"></div>
     <p class="demo">Später: Login per E-Mail (Magic Link) · Rollen & Modulrechte verwaltet der Super-Admin unter „Team“.</p>
@@ -306,7 +309,7 @@ td.r,th.r{text-align:right}
 <!-- APP -->
 <div id="app" hidden><div class="shell">
 <aside class="side">
-  <a class="brand" href="#home"><span class="mark">W</span><span>WEMEDIA<small>CREATE · ADVERTISE · PERFORM</small></span></a>
+  <a class="brand" href="#home"><img class="mark" src="icon.png" alt=""><span>WEMEDIA<small>CREATE · ADVERTISE · PERFORM</small></span></a>
   <div class="rolepill" id="rolepill">Superadmin</div>
   <nav id="nav" style="display:contents"></nav>
   <div class="foot"><span class="avatar sm" id="side-av">CK</span><span id="side-name">Camillo</span><button class="btn ghost sm" id="logout" style="margin-left:auto;color:#ffffffb3">Wechseln</button></div>
