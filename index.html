@@ -257,7 +257,7 @@ td.r,th.r{text-align:right}
 @media(max-width:1000px){.shell{grid-template-columns:1fr}.side{position:sticky;top:env(safe-area-inset-top,0px);height:auto;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;align-items:center;gap:4px;padding:10px 12px;z-index:25;scrollbar-width:none}.side .sec,.side .rolepill,.side .foot,.side .lbl span,.side .brand small{display:none}.side a,.side button.nv{width:auto;padding:8px 12px;border-radius:99px}.side .ic{display:none}.side .lbl b{font-size:13px;white-space:nowrap}.main{padding:0 max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}.topbar{margin:0 -16px 8px;padding:0 16px;height:60px}}
 
 /* grid elements, fading out */
-.hero,.side,#login{position:relative;isolation:isolate}.hero{overflow:hidden}
+.hero,#login{position:relative;isolation:isolate}.side{position:sticky;isolation:isolate}.hero{overflow:hidden}
 .hero::before,.side::before,#login::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;background-image:repeating-linear-gradient(0deg,#cff16a30 0 1px,transparent 1px 36px),repeating-linear-gradient(90deg,#cff16a30 0 1px,transparent 1px 36px);-webkit-mask-image:radial-gradient(70% 90% at 85% 0%,#000 0%,transparent 70%);mask-image:radial-gradient(70% 90% at 85% 0%,#000 0%,transparent 70%)}
 .side::before{background-image:repeating-linear-gradient(0deg,#ffffff1c 0 1px,transparent 1px 32px),repeating-linear-gradient(90deg,#ffffff1c 0 1px,transparent 1px 32px);-webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 42%);mask-image:linear-gradient(180deg,#000 0%,transparent 42%)}
 .side>*{position:relative}
