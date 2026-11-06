@@ -1351,7 +1351,7 @@ function kpObHtml(c,b){const st=obState(c),o=b.ob,s=OBS[st.cur];const sci=b.sci;
    <button class="btn ${o&&o.doneAt?'':'primary'} sm" data-go="onb:${c.id}" style="align-self:flex-start">${o&&o.doneAt?'Onboarding & Social CI ansehen':o?'Onboarding fortsetzen →':'Onboarding starten →'}</button></div>`}
 // ---------- grafik ----------
 // ---------- Figma-Board (Plugin „WEMEDIA Kunden-Board“) ----------
-const FIGMA_PLUGIN='https://www.figma.com/file/new?try-tool-resource-content-id=7742eec0-d11c-46f9-b82d-3c693f6aa019&try-tool-resource-type=gen_tool&type=design&mode=design';
+const FIGMA_PLUGIN='https://www.figma.com/file/new?try-tool-resource-content-id=04dc94f1-d594-4f4a-933a-5dd0a37a1131&try-tool-resource-type=gen_tool&type=design&mode=design';
 async function boardCode(c){const b=brand(c.id),fs=b.files||[];const vec=fs.find(f=>f.kind==='logo-vec'&&/svg/.test(f.type+f.name));const png=fs.find(f=>f.kind==='logo-png');let svg=null,pngB64=null;
   const isData=u=>/^data:/.test(u||'');
   if(vec&&vec.data){try{if(isData(vec.data)){const raw=vec.data.split(',')[1]||'';svg=/;base64,/.test(vec.data)?decodeURIComponent(escape(atob(raw))):decodeURIComponent(raw)}else svg=await (await fetch(vec.data)).text()}catch(e){svg=null}}
