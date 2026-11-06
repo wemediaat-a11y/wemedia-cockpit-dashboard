@@ -2,6 +2,7 @@
 // Aufruf aus dem Cockpit (sb.functions.invoke('content-agent', {body})) – nur Admin/SMM.
 //   {action:'plan',  client_id, month:'YYYY-MM', count?, notes?}  → {posts:[…], kampagnen:[…]}
 //   {action:'monthbrief', client_id, month, notes?, urls?:[…]}      → {briefing:'…'}  (Diktat/Notizen + Website)
+//   {action:'ci', client_id, url, name?, type?}                       → {colors:[{hex,name}], font_head, font_body}  (CI-PDF oder Logo-Bild)
 //   {action:'camps', client_id, month, ad_budget, notes?}           → {kampagnen:[…]}
 //   {action:'brief', post_id | (client_id + post:{…}), notes?}     → {briefing:{…}, caption?}
 // Der API-Schlüssel liegt als Secret ANTHROPIC_API_KEY in Supabase, nie im Browser.
@@ -94,6 +95,20 @@ const TOOLS: Record<string, unknown> = {
       required: ["kampagnen"],
     },
   },
+  ci: {
+    name: "markenwerte",
+    description: "Gibt die erkannten Markenfarben und Schriften zurück.",
+    input_schema: {
+      type: "object",
+      properties: {
+        colors: { type: "array", maxItems: 6, items: { type: "object", properties: { hex: { type: "string", description: "#RRGGBB" }, name: { type: "string", description: "Bezeichnung laut Dokument oder Rolle (Primär, Sekundär, Akzent, Hintergrund …)" } }, required: ["hex"] }, description: "Markenfarben, wichtigste zuerst (Hauptfarbe zuerst). Keine reinen Graustufen außer sie sind ausdrücklich Markenfarben." },
+        font_head: { type: "string", description: "Schrift für Headlines (Familienname, z. B. Montserrat) oder leer" },
+        font_body: { type: "string", description: "Schrift für Fließtext oder leer" },
+        note: { type: "string", description: "Kurzer Hinweis, falls unsicher" },
+      },
+      required: ["colors"],
+    },
+  },
   monthbrief: {
     name: "monatsbriefing",
     description: "Gibt das aufbereitete Monats-Briefing zurück.",
@@ -166,7 +181,7 @@ Regeln:
 - Formate: Feed 1080×1350, Carousel 1080×1350 (5–7 Slides), Reel/Story 1080×1920.
 - Abwechslung: Content-Säulen und Formate mischen; mindestens ein Drittel Reels, wenn die Marke Video zulässt.`;
 
-async function claude(tool: { name: string }, user: string, maxTokens: number) {
+async function claude(tool: { name: string }, user: string | unknown[], maxTokens: number) {
   const key = Deno.env.get("ANTHROPIC_API_KEY");
   if (!key) throw new Error("ANTHROPIC_API_KEY fehlt in den Supabase-Secrets");
   const r = await fetch("https://api.anthropic.com/v1/messages", {
@@ -178,7 +193,9 @@ async function claude(tool: { name: string }, user: string, maxTokens: number) {
       system: SYSTEM,
       tools: [tool],
       tool_choice: { type: "auto" },
-      messages: [{ role: "user", content: `${user}\n\nGib das Ergebnis ausschließlich über das Tool „${tool.name}“ zurück.` }],
+      messages: [{ role: "user", content: typeof user === "string"
+        ? `${user}\n\nGib das Ergebnis ausschließlich über das Tool „${tool.name}“ zurück.`
+        : [...user, { type: "text", text: `Gib das Ergebnis ausschließlich über das Tool „${tool.name}“ zurück.` }] }],
     }),
   });
   const j = await r.json();
@@ -257,6 +274,25 @@ AUFGABE: Erstelle den Redaktionsplan für ${client.name} für ${month} mit genau
       if (typeof kamp === "string") { try { kamp = JSON.parse(kamp); } catch { kamp = []; } }
       if (!Array.isArray(kamp)) kamp = [];
       return json({ strategie: out.strategie ?? "", posts: posts2, kampagnen: kamp.slice(0, 3), model: MODEL });
+    }
+
+    if (action === "ci") {
+      const url = String(body.url ?? "");
+      if (!url.startsWith(Deno.env.get("SUPABASE_URL") + "/storage/v1/object/sign/brand-files/")) return json({ error: "Nur Dateien aus dem Cockpit-Speicher" }, 400);
+      const r = await fetch(url);
+      if (!r.ok) return json({ error: "Datei nicht lesbar (" + r.status + ")" }, 400);
+      const type = (r.headers.get("content-type") || body.type || "").split(";")[0];
+      const buf = new Uint8Array(await r.arrayBuffer());
+      if (buf.length > 25 * 1024 * 1024) return json({ error: "Datei zu groß (max. 25 MB)" }, 400);
+      let bin = ""; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+      const b64 = btoa(bin);
+      const isPdf = type === "application/pdf" || /\.pdf$/i.test(String(body.name ?? ""));
+      const media = isPdf ? "application/pdf" : (/png/.test(type) ? "image/png" : /webp/.test(type) ? "image/webp" : "image/jpeg");
+      const block = isPdf ? { type: "document", source: { type: "base64", media_type: media, data: b64 } } : { type: "image", source: { type: "base64", media_type: media, data: b64 } };
+      const { out, usage } = await claude(TOOLS.ci as { name: string }, [block, { type: "text", text: `Das ist ${isPdf ? "das CI/CD-Manual" : "das Logo"} von ${client.name}. Lies die Markenfarben (exakte Hex-Codes; bei CMYK/RGB-Angaben in Hex umrechnen) und die Hausschriften aus. Nur was im Dokument steht bzw. im Logo zu sehen ist – nichts erfinden.` }], 4000);
+      await sb.from("events").insert({ type: "agent.ci", client_id: clientId, payload: { by: prof.name, usage } });
+      const colors = (Array.isArray(out.colors) ? out.colors : []).map((c: { hex?: string; name?: string }) => ({ hex: String(c.hex ?? "").trim(), name: c.name ?? "" })).filter((c: { hex: string }) => /^#?[0-9a-f]{6}$/i.test(c.hex)).map((c: { hex: string; name: string }) => ({ ...c, hex: (c.hex.startsWith("#") ? c.hex : "#" + c.hex).toLowerCase() }));
+      return json({ colors, font_head: out.font_head || "", font_body: out.font_body || "", note: out.note || "", model: MODEL });
     }
 
     if (action === "monthbrief") {
