@@ -1,6 +1,7 @@
 // WEMEDIA Content-Agent: Redaktionsplan + Grafik-Briefings mit Claude.
 // Aufruf aus dem Cockpit (sb.functions.invoke('content-agent', {body})) – nur Admin/SMM.
-//   {action:'plan',  client_id, month:'YYYY-MM', count?, notes?}  → {posts:[…]}
+//   {action:'plan',  client_id, month:'YYYY-MM', count?, notes?}  → {posts:[…], kampagnen:[…]}
+//   {action:'camps', client_id, month, ad_budget, notes?}           → {kampagnen:[…]}
 //   {action:'brief', post_id | (client_id + post:{…}), notes?}     → {briefing:{…}, caption?}
 // Der API-Schlüssel liegt als Secret ANTHROPIC_API_KEY in Supabase, nie im Browser.
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
@@ -42,6 +43,33 @@ const POST = {
   },
   required: ["date", "type", "pillar", "title", "idea", "caption", "hashtags"],
 };
+const KAMPAGNE = {
+  type: "object",
+  properties: {
+    name: { type: "string", description: "Kurzer Kampagnenname, z. B. „Probetraining Dezember“" },
+    ziel: { type: "string", enum: ["Leads", "Termine", "Reichweite", "Traffic", "Verkäufe"] },
+    zielgruppe: { type: "string", description: "Zielgruppe konkret: Ort/Umkreis, Alter, Interessen" },
+    budget: { type: "number", description: "Gesamtbudget in Euro für diese Kampagne" },
+    start: { type: "string", description: "Start YYYY-MM-DD" },
+    end: { type: "string", description: "Ende YYYY-MM-DD" },
+    idee: { type: "string", description: "Angebot/Hook der Kampagne in 1–2 Sätzen" },
+    creatives: {
+      type: "array",
+      description: "1–3 Werbemittel, die die Grafik gestalten muss",
+      items: {
+        type: "object",
+        properties: {
+          format: { type: "string", enum: TYPES },
+          titel: { type: "string", description: "Arbeitstitel des Werbemittels" },
+          idee: { type: "string", description: "Was zu sehen ist + Kernaussage" },
+          text: { type: "string", description: "Primärtext der Anzeige (Hook → Nutzen → CTA)" },
+        },
+        required: ["format", "titel", "idee", "text"],
+      },
+    },
+  },
+  required: ["name", "ziel", "zielgruppe", "budget", "start", "end", "idee", "creatives"],
+};
 const TOOLS: Record<string, unknown> = {
   plan: {
     name: "redaktionsplan",
@@ -51,8 +79,18 @@ const TOOLS: Record<string, unknown> = {
       properties: {
         strategie: { type: "string", description: "2–3 Sätze: roter Faden des Monats" },
         posts: { type: "array", items: POST },
+        kampagnen: { type: "array", items: KAMPAGNE, description: "0–2 Meta-Kampagnen passend zum Plan; leer, wenn kein Werbebudget vorgesehen ist" },
       },
-      required: ["strategie", "posts"],
+      required: ["strategie", "posts", "kampagnen"],
+    },
+  },
+  camps: {
+    name: "kampagnen",
+    description: "Gibt die Meta-Kampagnen für den Monat zurück.",
+    input_schema: {
+      type: "object",
+      properties: { kampagnen: { type: "array", items: KAMPAGNE, minItems: 1, maxItems: 2 } },
+      required: ["kampagnen"],
     },
   },
   brief: {
@@ -112,6 +150,7 @@ async function claude(tool: { name: string }, user: string, maxTokens: number) {
   });
   const j = await r.json();
   if (!r.ok) throw new Error("Claude: " + (j?.error?.message ?? r.status));
+  if (j.stop_reason === "max_tokens") throw new Error("Die Antwort war zu lang – bitte weniger Beiträge auf einmal planen.");
   const use = (j.content ?? []).find((c: { type: string }) => c.type === "tool_use");
   if (!use) throw new Error("Claude hat kein Ergebnis geliefert");
   return { out: use.input, usage: j.usage };
@@ -171,15 +210,38 @@ AUFGABE: Erstelle den Redaktionsplan für ${client.name} für ${month} mit genau
 - Termine gleichmäßig über den Monat verteilen, nur Daten in ${month}${taken.length ? `, nicht an diesen schon belegten Tagen: ${taken.join(", ")}` : ""}.
 - Keine Themen wiederholen, die schon in den bisherigen Beiträgen vorkommen.
 - Saisonale Anlässe in Österreich in diesem Monat nutzen, wenn sie zur Marke passen.
-- Pro Beitrag: Idee, fertige Caption und Hashtags (das Grafik-Briefing folgt separat).${body.notes ? `\nHINWEISE VOM SOCIAL MEDIA MANAGEMENT: ${String(body.notes).slice(0, 2000)}` : ""}`;
-      const { out, usage } = await claude(TOOLS.plan as { name: string }, prompt, Math.min(12000, 1200 + count * 600));
+- Pro Beitrag: Idee, fertige Caption und Hashtags (das Grafik-Briefing folgt separat).
+- Kampagnen: ${Number(body.ad_budget) > 0 ? `Werbebudget für diesen Monat: ${Number(body.ad_budget)} €. Plane PFLICHT 1–2 Meta-Kampagnen, die das Monatsziel unterstützen, Summe der Budgets = ${Number(body.ad_budget)} €, Laufzeit innerhalb von ${month}.` : "Wenn im Kontext oder in den Hinweisen ein Werbebudget steht, plane 1–2 Meta-Kampagnen (Summe ≤ Budget). Ohne Werbebudget: kampagnen = []."}
+- Material vom Kunden (Fotos, Drive-Links) nach Möglichkeit konkret den Beiträgen zuordnen und in der Idee nennen.${body.notes ? `\nHINWEISE VOM SOCIAL MEDIA MANAGEMENT: ${String(body.notes).slice(0, 2000)}` : ""}`;
+      const { out, usage } = await claude(TOOLS.plan as { name: string }, prompt, 16000);
       let raw = out.posts ?? [];
       if (typeof raw === "string") { try { raw = JSON.parse(raw); } catch { raw = []; } }
       if (!Array.isArray(raw)) raw = [];
       const posts2 = raw.filter((p: { date?: string }) => typeof p === "object" && p && String(p.date ?? "").startsWith(month)).slice(0, count);
       if (!posts2.length) return json({ error: "Der Agent hat keinen gültigen Plan geliefert – bitte nochmal versuchen.", debug: JSON.stringify(out).slice(0, 1500) }, 502);
       await sb.from("events").insert({ type: "agent.plan", client_id: clientId, payload: { month, count: posts2.length, by: prof.name, usage } });
-      return json({ strategie: out.strategie ?? "", posts: posts2, model: MODEL });
+      let kamp = out.kampagnen ?? [];
+      if (typeof kamp === "string") { try { kamp = JSON.parse(kamp); } catch { kamp = []; } }
+      if (!Array.isArray(kamp)) kamp = [];
+      return json({ strategie: out.strategie ?? "", posts: posts2, kampagnen: kamp.slice(0, 3), model: MODEL });
+    }
+
+    if (action === "camps") {
+      const month = String(body.month ?? "").match(/^\d{4}-\d{2}$/)?.[0];
+      const budget = Number(body.ad_budget) || 0;
+      if (!month || budget <= 0) return json({ kampagnen: [] });
+      const prompt = `${ctxText}
+
+AUFGABE: Plane 1–2 Meta-Kampagnen (Facebook/Instagram) für ${client.name} im ${month}.
+- Werbebudget für den Monat: ${budget} € – die Summe der Kampagnen-Budgets ist genau ${budget} €.
+- Laufzeit innerhalb von ${month}; Ziel passend zum Kundenziel (z. B. Leads/Termine statt nur Reichweite).
+- Zielgruppe konkret (Ort/Umkreis, Alter, Interessen), Angebot/Hook ohne erfundene Preise – fehlende Details als [Platzhalter].
+- Pro Kampagne 1–3 Werbemittel mit Format, Arbeitstitel, Bildidee und Primärtext.${body.notes ? `\nHINWEISE: ${String(body.notes).slice(0, 2000)}` : ""}`;
+      const { out, usage } = await claude(TOOLS.camps as { name: string }, prompt, 10000);
+      let kamp = out.kampagnen ?? [];
+      if (typeof kamp === "string") { try { kamp = JSON.parse(kamp); } catch { kamp = []; } }
+      await sb.from("events").insert({ type: "agent.camps", client_id: clientId, payload: { month, by: prof.name, usage } });
+      return json({ kampagnen: Array.isArray(kamp) ? kamp.slice(0, 2) : [], model: MODEL });
     }
 
     const d = post!.data as Record<string, unknown>;
@@ -189,7 +251,7 @@ AUFGABE: Erstelle den Redaktionsplan für ${client.name} für ${month} mit genau
 BEITRAG: ${JSON.stringify({ datum: d.date, format: d.type, plattform: d.pf, titel: d.title, idee: d.idea, saeule: d.pillar, caption: d.caption, hashtags: d.hashtags, kommentare: feedback })}
 
 AUFGABE: Schreibe das Grafik-/Produktions-Briefing für diesen Beitrag. Kundenkommentare unbedingt einarbeiten.${body.notes ? `\nHINWEISE VOM SOCIAL MEDIA MANAGEMENT: ${String(body.notes).slice(0, 2000)}` : ""}`;
-    const { out, usage } = await claude(TOOLS.brief as { name: string }, prompt, 3000);
+    const { out, usage } = await claude(TOOLS.brief as { name: string }, prompt, 8000);
     await sb.from("events").insert({ type: "agent.brief", client_id: clientId, payload: { post: post!.id, by: prof.name, usage } });
     let br = out.briefing;
     if (typeof br === "string") { try { br = JSON.parse(br); } catch { /* bleibt Text */ } }
