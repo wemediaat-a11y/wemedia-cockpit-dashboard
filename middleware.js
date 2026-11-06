@@ -1,7 +1,7 @@
 // WEMEDIA · Passwortschutz (Vercel Routing Middleware)
 // Ein gemeinsames Team-Passwort für Cockpit und CRM. Im Code liegt nur ein Hash –
 // das Passwort selbst steht nirgends. Passwort ändern: neuen Hash erzeugen (siehe README).
-export const config = { matcher: '/((?!favicon\\.png|icon\\.png|icon-green\\.png|wordmark\\.png|robots\\.txt).*)' };
+export const config = { matcher: '/((?!favicon\\.png|icon\\.png|icon-green\\.png|wordmark\\.png|robots\\.txt|supabase\\.js).*)' };
 
 const COOKIE = 'wm_auth';
 const SALT = 'wemedia-cockpit-v1';

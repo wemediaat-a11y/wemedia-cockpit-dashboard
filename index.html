@@ -394,6 +394,11 @@ td.r,th.r{text-align:right}
 /* paket & drehtage */
 .pkgbox{background:var(--panel);border-radius:14px;padding:12px 14px}.pkgbox .pk{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}.pkgbox .pk b{font-size:14px}.pkgbox .pk span{font-size:12px;color:var(--muted)}.pkgbox .sg{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}.pkgbox .sg div{display:flex;justify-content:space-between;font-size:12.5px;border-bottom:1px solid #00000010;padding:4px 0}.pkgbox .sg span{color:var(--muted)}.pkgbox .sg b{font-weight:600;text-align:right}
 .shoots{display:flex;flex-direction:column;gap:6px}.shoots label{display:flex;align-items:center;gap:10px;background:var(--panel);border-radius:12px;padding:7px 10px;font-size:13px}.shoots label.ok span{text-decoration:line-through;color:var(--muted)}.shoots label span{flex:1}.shoots input[type=date]{height:30px;padding:0 8px;border-radius:8px;font-size:12px;width:140px}.shoots em{font-style:normal;font-size:11.5px;color:var(--muted);min-width:70px;text-align:right}
+/* live login */
+.live-login{grid-column:1/-1;max-width:440px;background:#ffffff0f;border:1px solid #ffffff1f;border-radius:24px;padding:26px;display:flex;flex-direction:column;gap:12px;color:#fff}
+.live-login h2{font-size:24px;color:#fff;margin:0}.live-login p{margin:0;color:#ffffffb0;font-size:14px}
+.live-login input{height:46px;border-radius:14px;border:1px solid #ffffff2e;background:#ffffff14;color:#fff;font:inherit;font-size:15px;padding:0 14px;outline:0}.live-login input:focus{border-color:#cefb56}
+.live-login .btn{align-self:flex-start}
 /* figma task */
 .fig-task .dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin:0 2px -1px 0;box-shadow:inset 0 0 0 1px #0000001a}
 .fig-steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:13.5px;line-height:1.45;color:var(--muted)}.fig-steps b{color:var(--ink)}
@@ -458,6 +463,7 @@ td.r,th.r{text-align:right}
 @media(max-width:1000px){.ob{grid-template-columns:minmax(0,1fr)}.ob>*{min-width:0}.ob-steps{position:static}.ob-steps ol{flex-direction:row;overflow-x:auto;scrollbar-width:none;gap:4px}.ob-steps li button{width:auto;white-space:nowrap}.ob-steps li .lb span{display:none}}
 @media(max-width:620px){.ob-head{padding:22px 20px}.ob-head h2{font-size:23px}.ob-card{padding:18px}.ob-foot{border-radius:22px;flex-wrap:wrap}.ob-foot .sv{display:none}}
 </style>
+<script src="supabase.js"></script>
 <!-- LOGIN / ROLLENWAHL -->
 </head>
 <body>
@@ -704,10 +710,13 @@ const SN=Object.fromEntries(STATUS);
 function captionFor(c,t){return `${t.replace(/^(Reel|Carousel|Story):\s*/,'')} bei ${c.name} ✨ Alle Infos im Link in der Bio. Wir freuen uns auf euch!`}
 const CSTAT=[['entwurf','Entwurf'],['freigabe','Budget-Freigabe'],['freigegeben','Freigegeben'],['aktiv','Aktiv'],['beendet','Beendet']];
 const CSN=Object.fromEntries(CSTAT);
+const SB_URL='https://cviwmdvgafkvsdwjmcuv.supabase.co',SB_KEY='sb_publishable_Gi4ML9abkbhNSrSdhg5qBw_xqON8RMv';
+const LIVE=!/[?&]demo=1/.test(location.search)&&typeof supabase!=='undefined';
+const sb=LIVE?supabase.createClient(SB_URL,SB_KEY,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
 const KEY='wemedia-cockpit-v2';let S;
 function seedSugg(){return []}
-function load(){try{const r=localStorage.getItem(KEY);if(r){S=JSON.parse(r);const ids=MODULES.map(m=>m.id);for(const k in S.access)S.access[k]=S.access[k].filter(m=>ids.includes(m));for(const k in ROLES)if(!S.access[k])S.access[k]=ROLES[k].mods.slice();S.access.admin=ROLES.admin.mods.slice();if(!S.camps)S.camps=[];if(!S.brands)S.brands={};if(!S.clients)S.clients=[];if(!S.sugg)S.sugg=seedSugg();if(S.mode!=='empty'){S.mode='empty';S.posts=[];S.camps=[];S.sugg=[];S.brands={};S.users=(S.users||USERS).filter(u=>u.role!=='kunde');save()}return}}catch(e){}S={mode:'empty',posts:[],camps:[],brands:{},clients:[],sugg:[],users:USERS.map(u=>({...u})),access:Object.fromEntries(Object.entries(ROLES).map(([k,v])=>[k,v.mods.slice()])),role:null,theme:'light',briefs:{}}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function load(){if(LIVE){S={mode:'live',posts:[],camps:[],brands:{},clients:[],sugg:[],tasks:[],users:[],access:Object.fromEntries(Object.entries(ROLES).map(([k,v])=>[k,v.mods.slice()])),role:null,theme:'light',briefs:{}};return}try{const r=localStorage.getItem(KEY);if(r){S=JSON.parse(r);const ids=MODULES.map(m=>m.id);for(const k in S.access)S.access[k]=S.access[k].filter(m=>ids.includes(m));for(const k in ROLES)if(!S.access[k])S.access[k]=ROLES[k].mods.slice();S.access.admin=ROLES.admin.mods.slice();if(!S.camps)S.camps=[];if(!S.brands)S.brands={};if(!S.clients)S.clients=[];if(!S.sugg)S.sugg=seedSugg();if(S.mode!=='empty'){S.mode='empty';S.posts=[];S.camps=[];S.sugg=[];S.brands={};S.users=(S.users||USERS).filter(u=>u.role!=='kunde');save()}return}}catch(e){}S={mode:'empty',posts:[],camps:[],brands:{},clients:[],sugg:[],users:USERS.map(u=>({...u})),access:Object.fromEntries(Object.entries(ROLES).map(([k,v])=>[k,v.mods.slice()])),role:null,theme:'light',briefs:{}}}
+function save(){if(LIVE){uiSave();queueSync();return}try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function resetAll(){S={mode:'empty',posts:[],camps:[],brands:{},clients:[],sugg:[],tasks:[],briefs:{},users:USERS.map(u=>({...u})),access:Object.fromEntries(Object.entries(ROLES).map(([k,v])=>[k,v.mods.slice()])),role:null,theme:'light',crmReset:String(Date.now())};save();location.reload()}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(b){if(!confirm('Alle Daten (Kunden, Beiträge, Kampagnen, Vorschläge, Aufgaben) löschen und bei 0 starten? CRM wird ebenfalls geleert.'))return;resetAll()}});
 load();
@@ -718,8 +727,8 @@ const dDE=(iso,o={day:'numeric',month:'short'})=>new Date(iso+'T12:00').toLocale
 function toast(m,ms=2400){const t=$('#toast');t.textContent=m;t.onclick=null;t.style.cursor='';t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),ms)}
 const stPill=s=>({konzept:'',briefing:'violet',produktion:'blue',intern:'warn',freigabe:'warn',aenderung:'rose',freigegeben:'acc',geplant:'acc',live:'good'})[s]||'';
 const stName=s=>S.role==='kunde'?({freigabe:'Ihre Freigabe',aenderung:'Wird überarbeitet',freigegeben:'Freigegeben',geplant:'Freigegeben · geplant',live:'Veröffentlicht'})[s]||'In Arbeit':s==='aenderung'?'Änderung angefragt':SN[s];
-const me=()=>S.role?{...ROLES[S.role],id:S.role,user:S.users.find(u=>u.role===S.role)||S.users[0]}:null;
-const myClient=()=>S.role==='kunde'?(S.users.find(u=>u.role==='kunde')?.client||null):null;
+const me=()=>S.role?{...ROLES[S.role],id:S.role,user:(LIVE&&S.me&&S.me.role===S.role?S.users.find(u=>u.uid===S.me.id):null)||S.users.find(u=>u.role===S.role)||S.users[0]||{id:'?',name:ROLES[S.role].name}}:null;
+const myClient=()=>S.role==='kunde'?(LIVE&&S.me&&S.me.role==='kunde'?S.me.client_id:(S.users.find(u=>u.role==='kunde')?.client||null)):null;
 const openPosts=()=>S.posts.filter(p=>!['live'].includes(p.status));
 const camp=id=>S.camps.find(k=>k.id==id);
 const eur=n=>new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n||0);const eurK=n=>(n||0)>=1000?'€ '+((n||0)/1000).toLocaleString('de-AT',{maximumFractionDigits:1})+'k':eur(n);
@@ -755,7 +764,7 @@ function renderNav(){const A=S.access[S.role];const M=id=>MODULES.find(m=>m.id==
   h+=NAV_GROUPS.map(g=>{const open=S.navOpen[g.id]||curGroup===g.id;const n=g.count();return `<div class="grp ${open?'open':''}" data-grp="${g.id}"><button class="grp-h" data-toggle="${g.id}"><span class="ic">${M(g.id).icon}</span><span class="lbl"><b>${g.name}</b><span>${g.role}</span></span>${n?`<span class="cnt">${n}</span>`:''}<svg class="i chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="grp-items">${g.items.map(([v,n])=>`<button class="nv sub" data-v="${v}"><span class="lbl"><b>${n}</b></span></button>`).join('')}</div></div>`}).join('');
   $('#nav').innerHTML=h}
 const myInbox=()=>[...openTasks().filter(t=>t.kind==='offer').map(t=>({kind:'offer',t})),...onbOpen().filter(c=>!(S.brands[c.id]&&S.brands[c.id].onb.brand)).map(c=>({kind:'onb',c})),...openSugg(x=>x.kind==='budget').map(sg=>({kind:'sugg',sg}))];
-$('#logout').onclick=()=>{S.role=null;save();$('#app').hidden=true;$('#login').hidden=false;rLogin()};
+$('#logout').onclick=()=>{if(LIVE){if(S.me&&S.me.role==='admin'){$('#app').hidden=true;$('#login').hidden=false;rPreviewLive()}else sb.auth.signOut().then(()=>location.reload());return}S.role=null;save();$('#app').hidden=true;$('#login').hidden=false;rLogin()};
 let profClient=1,kpTab='profil';
 function route(){let h=(location.hash||'#home').slice(1).replace(/[^a-z]/g,'');if(!S.role){return}if((h==='kunde'||h==='onb')&&S.access[S.role].includes('social')){if(!cl(profClient)&&!allClients().length)h='social'}else if(!S.access[S.role].includes(h))h=S.access[S.role][0];
   $$('.view').forEach(v=>v.classList.toggle('active',v.id==='v-'+h));syncNav();$('#crumb').textContent=(h==='kunde'||h==='onb')?'Social Media / '+((cl(profClient)||allClients()[0]||{}).name||'Kunde')+(h==='onb'?' / Onboarding':''):(MODULES.find(x=>x.id===h)||{}).name;$('#top-cta').hidden=!(S.access[S.role].includes('social')&&['home','social','grafik','kunde'].includes(h));
@@ -934,13 +943,13 @@ function rFiles(c,b,box,after){box=box||'#kp-files';const fs=b.files||[];if(box=
   $$(box+' input[type=file]').forEach(inp=>inp.onchange=()=>addFiles(c,b,inp.dataset.fkind,[...inp.files],after));
   $$(box+' .fdrop').forEach(z=>{z.ondragover=e=>{e.preventDefault();z.classList.add('over')};z.ondragleave=()=>z.classList.remove('over');z.ondrop=e=>{e.preventDefault();z.classList.remove('over');addFiles(c,b,z.querySelector('input').dataset.fkind,[...e.dataTransfer.files],after)}});
   $$(box+' [data-fdel]').forEach(x=>x.onclick=()=>{if(!confirm('Datei aus dem Markenprofil entfernen?'))return;b.files=b.files.filter(f=>f.id!==+x.dataset.fdel);save();(after||rKunde)();toast('Datei entfernt')})}
-function addFiles(c,b,kind,files,after){if(!files.length)return;const total=(b.files||[]).reduce((a,f)=>a+f.size,0);let added=0,skipped=[];let chain=Promise.resolve();
+function addFiles(c,b,kind,files,after){if(!files.length)return;if(LIVE)return addFilesLive(c,b,kind,files,after);const total=(b.files||[]).reduce((a,f)=>a+f.size,0);let added=0,skipped=[];let chain=Promise.resolve();
   files.forEach(f=>{chain=chain.then(()=>new Promise(res=>{if(f.size>FMAX){skipped.push(f.name+' (max. 2 MB im Prototyp)');return res()}if(total+f.size>FTOTAL){skipped.push(f.name+' (Speicher im Prototyp voll – in der echten App unbegrenzt)');return res()}const r=new FileReader();r.onload=()=>{const multi=FSLOTS.find(s=>s[0]===kind)[4];if(!multi)b.files=b.files.filter(x=>x.kind!==kind);b.files.push({id:Date.now()+Math.floor(Math.random()*1e4),kind,name:f.name,type:f.type||'',size:f.size,data:r.result,at:dDE(TODAY),by:me().user.name});added++;res()};r.onerror=()=>{skipped.push(f.name);res()};r.readAsDataURL(f)}))});
   chain.then(()=>{if(added){if(b.files.some(f=>f.kind==='logo-vec'||f.kind==='logo-png')&&!b.proposal)b.onb.brand=true;if(!after||after===rOb)learn(c.id,`${added} Brand-Datei${added>1?'en':''} hinterlegt (${FSLOTS.find(s=>s[0]===kind)[1]}) – Grafik-Agent nutzt ab jetzt die Original-Dateien`,'Markenprofil');try{save()}catch(e){toast('Speicher voll – Datei konnte nicht gesichert werden');b.files.pop();return}(after||rKunde)();toast(`${added} Datei${added>1?'en':''} im Markenprofil hinterlegt`)}if(skipped.length)toast('Nicht übernommen: '+skipped.join(', '),6000)})}
 
 // ---------- Kunden-Onboarding-Formular + Mail ----------
-const onbLink=c=>location.origin+location.pathname+'?onboarding='+c.id;
-const onbFormId=()=>{const q=new URLSearchParams(location.search).get('onboarding');return q?+q:location.hash.startsWith('#onboarding/')?+location.hash.split('/')[1]:null};
+const onbLink=c=>{const t=LIVE?((S.brands[c.id]||{}).onbForm||{}).token:c.id;return location.origin+location.pathname+'?onboarding='+(t||'…')};
+const onbFormId=()=>{const q=new URLSearchParams(location.search).get('onboarding');return q?q:location.hash.startsWith('#onboarding/')?location.hash.split('/')[1]:null};
 function onbMailDefault(c,b){const to=(c.firma&&c.firma.email)||(S.users.find(u=>u.client===c.id)||{}).email||'';const first=(c.contact||'').split(' ')[0];
   return {to,subject:`Willkommen bei WEMEDIA – euer Onboarding für ${c.name}`,body:`Hallo ${first||'zusammen'},
 
@@ -977,7 +986,7 @@ function bindOnbMail(c,b,after){after=after||rKunde;const g=id=>$('#'+id);if(!g(
   g('om-reset').onclick=()=>{if(b.onbForm)delete b.onbForm.draft;save();after()}}
 const TONES=['Locker & Du','Seriös & Sie','Motivierend','Humorvoll','Premium','Bodenständig','Fachlich & erklärend'];
 let ofTones=[];
-function openOnbForm(){const id=onbFormId();const c=cl(id);$('#login').hidden=true;$('#app').hidden=true;const sec=$('#onbform');sec.hidden=false;document.title='Onboarding · WEMEDIA';
+function openOnbForm(){if(LIVE)return openOnbFormLive(String(onbFormId()));const id=onbFormId();const c=cl(id);$('#login').hidden=true;$('#app').hidden=true;const sec=$('#onbform');sec.hidden=false;document.title='Onboarding · WEMEDIA';
   if(!c){$('#of-form').hidden=true;$('#of-done').hidden=false;$('#of-done').innerHTML='<h2>Link ungültig</h2><p>Dieses Onboarding-Formular ist nicht (mehr) aktiv. Bitte meldet euch bei eurer Ansprechperson bei WEMEDIA.</p>';return}
   const b=brand(c.id);$('#of-client').textContent=c.name;$('#of-title').textContent=`Willkommen, ${c.name}!`;
   if(b.onbForm&&b.onbForm.doneAt){$('#of-form').hidden=true;$('#of-done').hidden=false;return}
@@ -1217,7 +1226,7 @@ function sciHtml(c,b){const s=b.sci,ed=!!sciEdit;const lst=(k,a)=>ed?`<textarea 
 let sciEdit=false;
 function obCheckDone(c,b){if(b.ob.doneAt||!b.sci||b.sci.status!=='freigegeben'||obMiss(c,b,'abschluss').length)return false;b.ob.doneAt=dDE(TODAY);b.ob.st.abschluss='done';learn(c.id,'Onboarding abgeschlossen','Onboarding');return true}
 // --- render ---
-function rOb(){const c=cl(profClient)||allClients()[0];if(!c){location.hash='social';return}profClient=c.id;const b=brand(c.id),d=obData(c,b),o=b.ob;
+function rOb(){const c=cl(profClient)||allClients()[0];if(!c){location.hash='social';return}profClient=c.id;const b=brand(c.id),d=obData(c,b),o=b.ob;if(LIVE&&d.kickWay==='form')ensureToken(c,b);
   if(!o.startedAt){o.startedAt=dDE(TODAY);o.by=me().user.name;save()}
   $('#kp-onboard').innerHTML='';// Mail-Composer nur einmal im DOM
   const lg=brandLogo(c.id);$('#ob-av').innerHTML=lg?`<img src="${lg.data}" alt="" style="width:100%;height:100%;object-fit:contain;padding:8px;background:#fff;border-radius:inherit">`:esc(c.name[0]);
@@ -1281,10 +1290,12 @@ function kpObHtml(c,b){const st=obState(c),o=b.ob,s=OBS[st.cur];const sci=b.sci;
 // ---------- grafik ----------
 // ---------- Figma-Board (Plugin „WEMEDIA Kunden-Board“) ----------
 const FIGMA_PLUGIN='https://www.figma.com/file/new?try-tool-resource-content-id=7742eec0-d11c-46f9-b82d-3c693f6aa019&try-tool-resource-type=gen_tool&type=design&mode=design';
-function boardCode(c){const b=brand(c.id),fs=b.files||[];const vec=fs.find(f=>f.kind==='logo-vec'&&/svg/.test(f.type+f.name));const png=fs.find(f=>f.kind==='logo-png');let svg=null;
-  if(vec){try{const raw=vec.data.split(',')[1]||'';svg=/;base64,/.test(vec.data)?decodeURIComponent(escape(atob(raw))):decodeURIComponent(raw)}catch(e){svg=null}}
-  return JSON.stringify({wm:'board',v:1,client:c.name,handle:c.handle,branche:c.branche,month:PLAN_MONTHS[0].label,sci:b.sci,logoSvg:svg,logoPng:png?png.data.split(',')[1]:null})}
-async function copyBoard(c){const code=boardCode(c);try{await navigator.clipboard.writeText(code);toast('Kundendaten kopiert – in Figma im Plugin ⌘V drücken',5000)}catch(e){const t=document.createElement('textarea');t.value=code;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();toast('Board-Code kopiert',4000)}}
+async function boardCode(c){const b=brand(c.id),fs=b.files||[];const vec=fs.find(f=>f.kind==='logo-vec'&&/svg/.test(f.type+f.name));const png=fs.find(f=>f.kind==='logo-png');let svg=null,pngB64=null;
+  const isData=u=>/^data:/.test(u||'');
+  if(vec&&vec.data){try{if(isData(vec.data)){const raw=vec.data.split(',')[1]||'';svg=/;base64,/.test(vec.data)?decodeURIComponent(escape(atob(raw))):decodeURIComponent(raw)}else svg=await (await fetch(vec.data)).text()}catch(e){svg=null}}
+  if(png&&png.data){try{if(isData(png.data))pngB64=png.data.split(',')[1];else{const bl=await (await fetch(png.data)).blob();pngB64=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(',')[1]);fr.readAsDataURL(bl)})}}catch(e){pngB64=null}}
+  return JSON.stringify({wm:'board',v:1,client:c.name,handle:c.handle,branche:c.branche,month:PLAN_MONTHS[0].label,sci:b.sci,logoSvg:svg,logoPng:pngB64})}
+async function copyBoard(c){const code=await boardCode(c);try{await navigator.clipboard.writeText(code);toast('Kundendaten kopiert – in Figma im Plugin ⌘V drücken',5000)}catch(e){const t=document.createElement('textarea');t.value=code;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();toast('Board-Code kopiert',4000)}}
 function rGrafik(){const ps=S.posts.filter(p=>['briefing','produktion','aenderung'].includes(p.status)).sort((a,b)=>a.date.localeCompare(b.date));$('#gr-n').textContent=ps.length;
   $('#gr-list').innerHTML=ps.map(p=>`<div class="appr" data-post="${p.id}"><div class="th v${p.v}"></div><div><div class="t">${esc(cl(p.client).name)} · ${esc(p.title)}</div><div class="s">${p.type} · fällig ${dDE(shift(p.date,-6))} · ${S.briefs[p.id]?'Briefing vorhanden':'Briefing folgt'}${p.status==='aenderung'?' · <b style="color:var(--rose)">Kundenänderung</b>':''}</div></div><span class="pill ${stPill(p.status)}">${stName(p.status)}</span></div>`).join('')||'<div class="card" style="color:var(--faint)">Queue leer.</div>';
   const ft=(S.tasks||[]).filter(t=>t.kind==='figma'&&!t.done);if(ft.length){$('#gr-list').insertAdjacentHTML('afterbegin',`<div class="section-title" style="margin-top:0">Neue Kunden · Figma-Board anlegen</div>${ft.map(t=>{const c=cl(t.clientId),b=c&&brand(c.id);if(!c||!b||!b.sci)return '';const lv=(b.files||[]).some(f=>f.kind==='logo-vec'&&/svg/.test(f.type+f.name)),lp=(b.files||[]).some(f=>f.kind==='logo-png');return `<div class="card fig-task" style="margin-bottom:var(--gap)"><div class="card-head"><div><h2>${esc(t.title)}</h2><div class="sub">Social CI v${b.sci.v} · ${b.sci.colors.map(x=>`<i class="dot" style="background:${esc(x.hex)}"></i>`).join('')} · ${esc(b.sci.fonts.head)} / ${esc(b.sci.fonts.body)} · Logo ${lv?'Vektor ✓':lp?'PNG ✓':'<b style="color:var(--rose)">fehlt</b>'}</div></div><span class="pill warn">offen</span></div>
@@ -1377,15 +1388,194 @@ $$('[data-close]').forEach(b=>b.onclick=close);
 $('#np-save').onclick=()=>{const t=$('#np-title').value.trim();if(!t){$('#np-title').focus();return}const c=cl($('#np-client').value);
   S.posts.push({id:Date.now(),client:c.id,title:t,type:$('#np-type').value,date:$('#np-date').value||DEF_DATE,pf:$('#np-pf').value,status:'konzept',v:Math.ceil(Math.random()*8),caption:$('#np-cap').value||captionFor(c,t),hashtags:'#'+c.handle.replace('.',''),comments:[]});
   save();close();planClient=profClient=c.id;kpTab='plan';planMonth=($('#np-date').value||DEF_DATE).slice(0,7);if(!PLAN_MONTHS.some(m=>m.ym===planMonth))planMonth=PLAN_MONTHS[0].ym;location.hash='kunde';if(location.hash==='#kunde')route();toast('Beitrag angelegt');$('#np-title').value=$('#np-cap').value=''};
-$('#nu-save').onclick=()=>{const n=$('#nu-name').value.trim();if(!n){$('#nu-name').focus();return}S.users.push({id:n.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(),name:n,email:$('#nu-email').value.trim(),role:$('#nu-role').value});save();close();rTeam();toast('Einladung gesendet (Demo)');$('#nu-name').value=$('#nu-email').value=''};
+$('#nu-save').onclick=()=>{const n=$('#nu-name').value.trim();if(!n){$('#nu-name').focus();return}S.users.push({id:n.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(),name:n,email:$('#nu-email').value.trim(),role:$('#nu-role').value});save();close();rTeam();toast(LIVE?'Einladung angelegt – Login über die eigene E-Mail auf dieser Seite':'Einladung gesendet (Demo)');$('#nu-name').value=$('#nu-email').value=''};
 const q=$('#q'),pop=$('#search-pop');if(q){q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();if(!v){pop.classList.remove('open');return}const cs=allClients().filter(c=>c.name.toLowerCase().includes(v)).slice(0,4),ps=S.posts.filter(p=>p.title.toLowerCase().includes(v)).slice(0,6),ks=S.camps.filter(k=>k.name.toLowerCase().includes(v)).slice(0,4);pop.innerHTML=cs.map(c=>`<button data-client="${c.id}"><span class="co">${esc(c.name[0])}</span><span>${esc(c.name)}</span><span class="k">Kunde</span></button>`).join('')+ks.map(k=>`<button data-camp="${k.id}"><span class="co">€</span><span>${esc(k.name)} · ${esc(cl(k.client).name)}</span><span class="k">${cName(k.status)}</span></button>`).join('')+ps.map(p=>`<button data-post="${p.id}"><span class="co">▦</span><span>${esc(p.title)} · ${esc(cl(p.client).name)}</span><span class="k">${stName(p.status)}</span></button>`).join('')||'<div style="padding:10px;color:var(--faint)">Nichts gefunden.</div>';pop.classList.add('open')});document.addEventListener('click',e=>{if(!e.target.closest('#search'))pop.classList.remove('open')});pop.addEventListener('click',()=>{pop.classList.remove('open');q.value=''});document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();q.focus()}})}
 // init
 document.documentElement.dataset.theme='light';
-if(onbFormId()!==null){openOnbForm()}else if(S.role){enter()}else{rLogin()}
+// ---------- LIVE: Supabase (Logins, Datenbank, Dateien, Echtzeit) ----------
+// Ohne ?demo=1 läuft das Cockpit gegen die Datenbank. Mit ?demo=1 bleibt der alte Browser-Modus zum Ausprobieren.
+const DB={synced:{},timer:null,busy:false,again:false,urls:{},chan:null,dirtyRender:false,
+  tables:['clients','client_contracts','brands','posts','campaigns','suggestions','tasks','invites','role_access','settings'],
+  pk:{clients:'id',client_contracts:'client_id',brands:'client_id',posts:'id',campaigns:'id',suggestions:'id',tasks:'id',invites:'email',role_access:'role',settings:'key'}};
+const clone=o=>JSON.parse(JSON.stringify(o??null));
+const UIKEY='wemedia-cockpit-ui';
+function uiSave(){try{localStorage.setItem(UIKEY,JSON.stringify({theme:S.theme,navOpen:S.navOpen,obHelp:S.obHelp,crmStats:S.crmStats,preview:S.me&&S.me.role==='admin'?S.role:null}))}catch(e){}}
+function uiLoad(){try{return JSON.parse(localStorage.getItem(UIKEY)||'{}')}catch(e){return {}}}
+const canFees=()=>S.me&&['admin','sales'].includes(S.me.role);
+const realRole=()=>S.me?S.me.role:null;
+
+// --- Cockpit-Objekte → Tabellenzeilen ---
+function rowsOf(){const out={};const add=(t,key,row)=>{(out[t]=out[t]||{})[key]=row};
+  for(const c of S.clients||[]){const d=clone(c);delete d.id;delete d.name;let con=null;
+    if(d.fromDeal){con={value:d.fromDeal.value??null,offer:d.fromDeal.offer??null};delete d.fromDeal.value;delete d.fromDeal.offer}
+    add('clients',c.id,{id:c.id,name:c.name,data:d});
+    if(con&&canFees()&&(con.value!=null||con.offer))add('client_contracts',c.id,{client_id:c.id,data:con})}
+  for(const k in S.brands||{}){if(!cl(k))continue;const d=clone(S.brands[k]);(d.files||[]).forEach(f=>{if(f.path)delete f.data});add('brands',+k,{client_id:+k,data:d})}
+  for(const p of S.posts||[]){if(!cl(p.client))continue;const d=clone(p);if(S.briefs&&S.briefs[p.id])d._brief=S.briefs[p.id];add('posts',p.id,{id:p.id,client_id:p.client,status:p.status,data:d})}
+  for(const k of S.camps||[]){if(!cl(k.client))continue;add('campaigns',k.id,{id:k.id,client_id:k.client,status:k.status,data:clone(k)})}
+  for(const g of S.sugg||[]){add('suggestions',g.id,{id:g.id,client_id:g.client&&cl(g.client)?g.client:null,status:g.status||null,data:clone(g)})}
+  for(const t of S.tasks||[]){if(!['admin','sales','smm','grafik'].includes(t.for))continue;add('tasks',t.id,{id:t.id,client_id:t.clientId&&cl(t.clientId)?t.clientId:null,for_role:t.for,done:!!t.done,data:clone(t)})}
+  for(const u of S.users||[]){if(u.uid||!u.email)continue;add('invites',u.email.toLowerCase(),{email:u.email.toLowerCase(),name:u.name,initials:u.id,role:u.role,client_id:u.client&&cl(u.client)?u.client:null,data:{invited:!!u.invited,invitedAt:u.invitedAt||null}})}
+  if(realRole()==='admin')for(const r in S.access||{})add('role_access',r,{role:r,modules:S.access[r]});
+  if(S.agency)add('settings','agency',{key:'agency',data:clone(S.agency)});
+  return out}
+const sk=(t,k)=>t+':'+k;
+
+// --- Tabellenzeilen → Cockpit-Objekte ---
+function fromRow(t,r,contracts){
+  if(t==='clients'){const c={...r.data,id:r.id,name:r.name};const con=contracts&&contracts[r.id];if(con){c.fromDeal=c.fromDeal||{};if(con.value!=null)c.fromDeal.value=con.value;if(con.offer)c.fromDeal.offer=con.offer}return c}
+  if(t==='posts'){const p={...r.data,id:r.id,client:r.client_id,status:r.status};if(p._brief){S.briefs=S.briefs||{};S.briefs[r.id]=p._brief}delete p._brief;return p}
+  if(t==='campaigns')return {...r.data,id:r.id,client:r.client_id,status:r.status};
+  if(t==='suggestions'||t==='tasks')return {...r.data,id:r.id};
+  if(t==='brands'){const d=r.data||{};(d.files||[]).forEach(f=>{if(f.path&&DB.urls[f.path])f.data=DB.urls[f.path]});return d}
+  return r}
+function usersFrom(profiles,invites){const act=profiles.map(p=>({uid:p.id,id:p.initials||(p.name||'?').slice(0,2).toUpperCase(),name:p.name,email:p.email,role:p.role,client:p.client_id,invited:true}));
+  const have=new Set(act.map(u=>u.email.toLowerCase()));
+  return act.concat(invites.filter(i=>!have.has(i.email)).map(i=>({id:i.initials||i.name.slice(0,2).toUpperCase(),name:i.name,email:i.email,role:i.role,client:i.client_id,pending:true,...(i.data||{})})))}
+
+async function signFiles(){const paths=[];for(const k in S.brands)(S.brands[k].files||[]).forEach(f=>{if(f.path&&!DB.urls[f.path])paths.push(f.path)});
+  if(!paths.length)return;const {data}=await sb.storage.from('brand-files').createSignedUrls(paths,60*60*24*7);
+  (data||[]).forEach(x=>{if(x.signedUrl)DB.urls[x.path]=x.signedUrl});for(const k in S.brands)(S.brands[k].files||[]).forEach(f=>{if(f.path&&DB.urls[f.path])f.data=DB.urls[f.path]})}
+
+async function liveLoad(profile){
+  const q=t=>sb.from(t).select('*');
+  const [cl_,bd,ps,ks,sg,ts,pr,iv,ra,st,co]=await Promise.all(['clients','brands','posts','campaigns','suggestions','tasks','profiles','invites','role_access','settings'].map(t=>q(t)).concat(['admin','sales'].includes(profile.role)?[q('client_contracts')]:[Promise.resolve({data:[]})]));
+  for(const r of [cl_,bd,ps,ks,sg,ts,pr,iv,ra,st,co])if(r.error)throw r.error;
+  const ui=uiLoad();const contracts=Object.fromEntries((co.data||[]).map(x=>[x.client_id,x.data]));
+  S={mode:'live',me:profile,briefs:{},theme:ui.theme||'light',navOpen:ui.navOpen||{},obHelp:ui.obHelp,crmStats:ui.crmStats,
+    clients:cl_.data.map(r=>fromRow('clients',r,contracts)),brands:{},posts:[],camps:[],sugg:[],tasks:[],
+    users:usersFrom(pr.data||[],iv.data||[]),access:Object.fromEntries(Object.entries(ROLES).map(([k,v])=>[k,v.mods.slice()])),
+    agency:(st.data.find(x=>x.key==='agency')||{}).data||{metaId:'',tiktokId:'',mcc:'',email:'social@wemedia.at'}};
+  for(const r of ra.data||[])S.access[r.role]=r.modules;S.access.admin=ROLES.admin.mods.slice();
+  for(const r of bd.data)S.brands[r.client_id]=r.data||{};
+  S.posts=ps.data.map(r=>fromRow('posts',r));S.camps=ks.data.map(r=>fromRow('campaigns',r));S.sugg=sg.data.map(r=>fromRow('suggestions',r));S.tasks=ts.data.map(r=>fromRow('tasks',r));
+  await signFiles();
+  S.role=profile.role==='admin'&&ui.preview&&ROLES[ui.preview]?ui.preview:profile.role;
+  // Stand merken: nur Abweichungen davon werden gespeichert
+  DB.synced={};const rows=rowsOf();for(const t in rows)for(const k in rows[t])DB.synced[sk(t,k)]=JSON.stringify(rows[t][k]);
+  // Einladungen/Verträge/Rechte, die man nicht sieht, nicht als „gelöscht“ werten
+}
+
+function queueSync(){if(!LIVE||!S||!S.me)return;clearTimeout(DB.timer);DB.timer=setTimeout(runSync,350)}
+async function runSync(){if(DB.busy){DB.again=true;return}DB.busy=true;
+  try{
+    if(realRole()==='kunde'){await kundeSync();return}
+    const rows=rowsOf();const order=['clients','client_contracts','brands','posts','campaigns','suggestions','tasks','invites','role_access','settings'];
+    const errs=[];
+    for(const t of order){const cur=rows[t]||{};const ins=[],upd=[];
+      for(const k in cur){const j=JSON.stringify(cur[k]);const prev=DB.synced[sk(t,k)];if(prev===j)continue;(prev===undefined?ins:upd).push([k,cur[k],j])}
+      if(ins.length){const {error}=t==='role_access'||t==='settings'||t==='client_contracts'||t==='brands'?await sb.from(t).upsert(ins.map(x=>x[1])):await sb.from(t).insert(ins.map(x=>x[1]));
+        if(error){if(error.code==='23505'){for(const x of ins){const r=await sb.from(t).update(x[1]).eq(DB.pk[t],x[1][DB.pk[t]]);if(!r.error)DB.synced[sk(t,x[0])]=x[2];else errs.push(t+': '+r.error.message)}}else errs.push(t+': '+error.message)}
+        else ins.forEach(x=>DB.synced[sk(t,x[0])]=x[2])}
+      for(const x of upd){const {error}=await sb.from(t).update(x[1]).eq(DB.pk[t],x[1][DB.pk[t]]);if(error)errs.push(t+': '+error.message);else DB.synced[sk(t,x[0])]=x[2]}}
+    // Gelöschtes entfernen (Kinder zuerst)
+    for(const t of ['tasks','suggestions','campaigns','posts','brands','invites','client_contracts','clients']){const cur=rows[t]||{};
+      const gone=Object.keys(DB.synced).filter(s=>s.startsWith(t+':')&&!(s.slice(t.length+1) in cur)).map(s=>s.slice(t.length+1));
+      for(const k of gone){const v=t==='invites'?k:+k;const {error}=await sb.from(t).delete().eq(DB.pk[t],v);if(error&&!/0 rows/.test(error.message))errs.push(t+': '+error.message);delete DB.synced[sk(t,k)]}}
+    if(errs.length){console.warn('Sync',errs);toast('Speichern teilweise fehlgeschlagen – '+errs[0],6000)}
+  }catch(e){console.warn(e);toast('Keine Verbindung zur Datenbank – Änderungen werden erneut versucht',5000);clearTimeout(DB.timer);DB.timer=setTimeout(runSync,5000)}
+  finally{DB.busy=false;if(DB.again){DB.again=false;queueSync()}}}
+
+// Kunden dürfen nur Status/Kommentare/Freigaben ändern – über eigene Datenbank-Funktionen
+async function kundeSync(){const rows=rowsOf();
+  for(const k in rows.posts||{}){const r=rows.posts[k],j=JSON.stringify(r),prev=DB.synced[sk('posts',k)];if(prev===j||!prev)continue;
+    const {error}=await sb.rpc('kunde_update_post',{p_id:r.id,p_status:r.status,p_comments:r.data.comments||[]});if(error)toast('Freigabe nicht gespeichert: '+error.message,5000);else DB.synced[sk('posts',k)]=j}
+  for(const k in rows.campaigns||{}){const r=rows.campaigns[k],j=JSON.stringify(r),prev=DB.synced[sk('campaigns',k)];if(prev===j||!prev)continue;
+    const o=JSON.parse(prev).data,n=r.data,patch={};for(const f of ['status','approval','comments','change','budget'])if(JSON.stringify(o[f])!==JSON.stringify(n[f]))patch[f]=n[f]??null;
+    const {error}=await sb.rpc('kunde_update_campaign',{p_id:r.id,p_patch:patch});if(error)toast('Freigabe nicht gespeichert: '+error.message,5000);else DB.synced[sk('campaigns',k)]=j}}
+
+// Echtzeit: Änderungen anderer sofort übernehmen
+function liveSubscribe(){if(DB.chan)sb.removeChannel(DB.chan);DB.chan=sb.channel('cockpit');
+  for(const t of ['clients','brands','posts','campaigns','suggestions','tasks','invites','profiles','settings'])
+    DB.chan.on('postgres_changes',{event:'*',schema:'public',table:t},p=>liveApply(t,p));
+  DB.chan.subscribe()}
+function liveApply(t,p){const del=p.eventType==='DELETE',r=del?p.old:p.new;if(!r)return;
+  const coll={clients:'clients',posts:'posts',campaigns:'camps',suggestions:'sugg',tasks:'tasks'}[t];
+  if(coll){const id=r[DB.pk[t]];const arr=S[coll];const i=arr.findIndex(x=>x.id==id);
+    if(del){if(i>=0)arr.splice(i,1);delete DB.synced[sk(t,id)]}
+    else{let o=fromRow(t,r);if(t==='clients'&&i>=0&&arr[i].fromDeal&&canFees()){o.fromDeal=Object.assign({},o.fromDeal,{value:arr[i].fromDeal.value,offer:arr[i].fromDeal.offer})}if(i>=0)arr[i]=o;else arr.push(o)}}
+  else if(t==='brands'){if(del)delete S.brands[r.client_id];else{S.brands[r.client_id]=fromRow('brands',r);signFiles().then(liveRender)}}
+  else if(t==='settings'&&!del&&r.key==='agency')S.agency=r.data;
+  else if(t==='invites'||t==='profiles'){sb.from('profiles').select('*').then(a=>sb.from('invites').select('*').then(b=>{if(!a.error&&!b.error){S.users=usersFrom(a.data,b.data);markSynced('invites');liveRender()}}));return}
+  markSynced(t);liveRender();
+  if(t==='brands'&&!del&&location.hash==='#onb'&&r.client_id==profClient){const f=(S.brands[r.client_id]||{}).onbForm;if(f&&f.doneAt&&!f._seen){f._seen=true;toast('✓ Der Kunde hat den Fragebogen ausgefüllt – Antworten stehen in Schritt 4, 5 und 7',5000)}}}
+function markSynced(t){const rows=rowsOf()[t]||{};for(const s of Object.keys(DB.synced))if(s.startsWith(t+':'))delete DB.synced[s];for(const k in rows)DB.synced[sk(t,k)]=JSON.stringify(rows[k])}
+let liveRT=0;function liveRender(){clearTimeout(liveRT);liveRT=setTimeout(()=>{if(!S.role||$('#app').hidden)return;const a=document.activeElement;if(a&&a.closest&&a.closest('#app')&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)){DB.dirtyRender=true;return}updateBell();route()},250)}
+document.addEventListener('focusout',()=>{if(DB.dirtyRender){DB.dirtyRender=false;liveRender()}});
+
+// Dateien direkt in den Speicher hochladen
+async function addFilesLive(c,b,kind,files,after){const multi=FSLOTS.find(s=>s[0]===kind)[4];let added=0,skipped=[];
+  for(const f of files){if(f.size>50*1024*1024){skipped.push(f.name+' (max. 50 MB)');continue}
+    const path=`${c.id}/${Date.now()}-${f.name.replace(/[^\w.\-]+/g,'_')}`;
+    const {error}=await sb.storage.from('brand-files').upload(path,f,{contentType:f.type||undefined});if(error){skipped.push(f.name+' ('+error.message+')');continue}
+    const {data}=await sb.storage.from('brand-files').createSignedUrl(path,60*60*24*7);DB.urls[path]=data&&data.signedUrl;
+    if(!multi)b.files=(b.files||[]).filter(x=>x.kind!==kind);(b.files=b.files||[]).push({id:Date.now()+Math.floor(Math.random()*1e4),kind,name:f.name,type:f.type||'',size:f.size,path,data:DB.urls[path],at:dDE(TODAY),by:me().user.name});added++}
+  if(added){if(b.files.some(f=>f.kind==='logo-vec'||f.kind==='logo-png')&&!b.proposal)b.onb.brand=true;learn(c.id,`${added} Brand-Datei${added>1?'en':''} hinterlegt (${FSLOTS.find(s=>s[0]===kind)[1]})`,'Markenprofil');save();(after||rKunde)();toast(`${added} Datei${added>1?'en':''} gespeichert`)}
+  if(skipped.length)toast('Nicht übernommen: '+skipped.join(', '),6000)}
+
+// Fragebogen-Link: zufälliges Token statt Kunden-ID
+const tokenBusy={};
+async function ensureToken(c,b){if(!LIVE||(b.onbForm&&b.onbForm.token)||tokenBusy[c.id])return;tokenBusy[c.id]=true;
+  const {data,error}=await sb.from('onboarding_tokens').insert({client_id:c.id}).select('token').single();tokenBusy[c.id]=false;
+  if(error){toast('Fragebogen-Link konnte nicht erstellt werden: '+error.message,5000);return}
+  b.onbForm=Object.assign(b.onbForm||{},{token:data.token});if(b.onbForm.draft)delete b.onbForm.draft;save();if(location.hash==='#onb')rOb()}
+
+// Öffentlicher Fragebogen (Kunde, ohne Login)
+let ofFiles=[];
+async function openOnbFormLive(token){$('#login').hidden=true;$('#app').hidden=true;$('#onbform').hidden=false;document.title='Onboarding · WEMEDIA';
+  const bad=t=>{$('#of-form').hidden=true;$('#of-done').hidden=false;$('#of-done').innerHTML=`<h2>${t}</h2><p>Bitte meldet euch bei eurer Ansprechperson bei WEMEDIA.</p>`};
+  const {data:d,error}=await sb.rpc('onboarding_form_get',{p_token:token});if(error||!d)return bad('Link ungültig oder abgelaufen');
+  $('#of-client').textContent=d.client;$('#of-title').textContent=`Willkommen, ${d.client}!`;if(d.done){$('#of-form').hidden=true;$('#of-done').hidden=false;return}
+  $('#of-form').hidden=false;$('#of-done').hidden=true;const v=(id,val)=>{const el=$('#'+id);if(el&&!el.value)el.value=val||''};
+  v('of-pos',d.proposal?'':d.pos);v('of-aud',d.aud);v('of-colors',(d.colors||[]).join(', '));v('of-tags',d.tags);v('of-goal',d.goal);v('of-approver',[d.contact,d.email].filter(Boolean).join(', '));
+  $('#of-tonechips').innerHTML=TONES.map(t=>`<button type="button" class="${ofTones.includes(t)?'on':''}" data-tone="${t}">${t}</button>`).join('');$$('#of-tonechips button').forEach(x=>x.onclick=()=>{const t=x.dataset.tone;ofTones=ofTones.includes(t)?ofTones.filter(y=>y!==t):[...ofTones,t];x.classList.toggle('on')});
+  const rf=()=>{$('#of-files').innerHTML=FSLOTS.filter(s=>s[0]!=='fonts').map(([k,t,dd,acc,multi])=>{const list=ofFiles.filter(f=>f.kind===k);return `<div class="fslot ${list.length?'has':''}"><div class="fh"><b>${k==='assets'?'Fotos & weitere Dateien':t}</b><span>${k==='assets'?'Team, Standort, Produkte – gerne mehrere':dd}</span></div>${list.map(f=>`<div class="frow"><span class="fp"><span class="ext">${esc((f.name.split('.').pop()||'').toUpperCase().slice(0,4))}</span></span><div class="fn"><b>${esc(f.name)}</b><span>${fmtB(f.size)} · hochgeladen ✓</span></div></div>`).join('')}${(!list.length||multi)?`<label class="fdrop"><input type="file" accept="${acc}" ${multi?'multiple':''} data-fkind="${k}" hidden><span>+ ${list.length?'weitere Datei':'Datei'} hochladen</span></label>`:''}</div>`}).join('');
+    $$('#of-files input[type=file]').forEach(inp=>inp.onchange=async()=>{for(const f of [...inp.files]){if(f.size>50*1024*1024){toast(f.name+': max. 50 MB');continue}const path=`inbox/${token}/${Date.now()}-${f.name.replace(/[^\w.\-]+/g,'_')}`;inp.closest('.fslot').querySelector('.fdrop span').textContent='Wird hochgeladen …';
+      const {error}=await sb.storage.from('brand-files').upload(path,f,{contentType:f.type||undefined});if(error){toast('Upload fehlgeschlagen: '+error.message,5000);continue}
+      if(!FSLOTS.find(s=>s[0]===inp.dataset.fkind)[4])ofFiles=ofFiles.filter(x=>x.kind!==inp.dataset.fkind);ofFiles.push({id:Date.now()+Math.floor(Math.random()*1e4),kind:inp.dataset.fkind,name:f.name,type:f.type||'',size:f.size,path,at:dDE(TODAY),by:'Kunde'})}rf()})};rf();
+  const prog=()=>{const ids=['of-pos','of-aud','of-dos','of-goal','of-approver'];const n=ids.filter(i=>$('#'+i).value.trim()).length+(ofTones.length||$('#of-tone').value?1:0)+(ofFiles.length?1:0)+($('#of-donts').value||$('#of-colors').value?1:0);$('#of-bar').style.width=Math.round(n/8*100)+'%'};$('#of-form').oninput=prog;prog();
+  $('#of-submit').onclick=async()=>{const req=['of-pos','of-aud','of-dos','of-goal','of-approver'].filter(i=>!$('#'+i).value.trim());if(req.length){$('#'+req[0]).focus();toast('Bitte alle Pflichtfelder ausfüllen ('+req.length+' fehlen)');return}
+    const split=s=>s.split(',').map(x=>x.trim()).filter(Boolean);const ap=$('#of-approver').value.trim();const em=(ap.match(/[^\s,;<>]+@[^\s,;<>]+/)||[''])[0];
+    const ans={pos:$('#of-pos').value.trim(),aud:$('#of-aud').value.trim(),tones:ofTones.slice(),toneNote:$('#of-tone').value.trim(),tone:[...ofTones,$('#of-tone').value.trim()].filter(Boolean).join('. '),
+      dos:split($('#of-dos').value),donts:split($('#of-donts').value),colors:split($('#of-colors').value).filter(x=>/^#?[0-9a-f]{3,8}$/i.test(x)).map(x=>x.startsWith('#')?x:'#'+x),
+      tags:$('#of-tags').value.trim(),goal:$('#of-goal').value.trim(),approver:ap,approverEmail:em,approverName:ap.replace(em,'').replace(/[,;<>]/g,' ').trim(),speed:$('#of-speed').value};
+    $('#of-submit').disabled=true;$('#of-submit').textContent='Wird gesendet …';
+    const {data:ok,error}=await sb.rpc('onboarding_form_submit',{p_token:token,p_answers:ans,p_files:ofFiles});
+    if(error||!ok){$('#of-submit').disabled=false;$('#of-submit').textContent='Absenden – Markenprofil anlegen';toast('Senden fehlgeschlagen'+(error?': '+error.message:' – Link abgelaufen?'),6000);return}
+    $('#of-form').hidden=true;$('#of-done').hidden=false;window.scrollTo({top:0})}}
+
+// Login per Magic Link
+function rLoginLive(state){const box=$('#roles');const mb=$('.modebar');if(mb)mb.hidden=true;$('.login-box > p.demo').textContent='Login-Link kommt per E-Mail – im selben Browser öffnen. Kein Passwort nötig.';
+  $('.login-box > p:not(.demo)').textContent='CRM, Social Media, Grafik, Performance und Kundenportal – Agents arbeiten vor, Menschen geben frei.';
+  if(state==='sent'){box.innerHTML=`<div class="live-login"><h2>Mail ist unterwegs ✓</h2><p>Öffne den Link in der E-Mail an <b>${esc(DB.mail||'')}</b> – im selben Browser wie dieses Fenster.</p><button class="btn" id="ll-back">Andere E-Mail</button></div>`;$('#ll-back').onclick=()=>rLoginLive();return}
+  if(state==='noaccess'){box.innerHTML=`<div class="live-login"><h2>Noch kein Zugang</h2><p>Für <b>${esc(DB.mail||'diese E-Mail')}</b> gibt es keine Einladung. Bitte bei Camillo melden.</p><button class="btn" id="ll-out">Abmelden</button></div>`;$('#ll-out').onclick=async()=>{await sb.auth.signOut();rLoginLive()};return}
+  if(state==='loading'){box.innerHTML=`<div class="live-login"><h2>Lädt …</h2><p>Daten werden geladen.</p></div>`;return}
+  box.innerHTML=`<form class="live-login" id="ll-form"><h2>Anmelden</h2><p>Mit deiner E-Mail-Adresse – du bekommst einen Login-Link.</p><input type="email" id="ll-mail" placeholder="name@wemedia.at" autocomplete="email" required><button class="btn primary" type="submit">Login-Link senden</button></form>`;
+  $('#ll-form').onsubmit=async e=>{e.preventDefault();const m=$('#ll-mail').value.trim();if(!/@/.test(m))return;DB.mail=m;const btn=$('#ll-form button');btn.disabled=true;btn.textContent='Wird gesendet …';
+    const {error}=await sb.auth.signInWithOtp({email:m,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true}});
+    if(error){btn.disabled=false;btn.textContent='Login-Link senden';toast(error.message.includes('rate')?'Zu viele Login-Mails in kurzer Zeit – bitte in ein paar Minuten nochmal':'Fehler: '+error.message,6000);return}
+    rLoginLive('sent')}}
+// Admin: Ansicht als andere Rolle (Vorschau) + Abmelden
+function rPreviewLive(){rLogin();const ml=$('#mode-lbl');const mb=$('.modebar');if(mb){mb.hidden=false;mb.innerHTML=`<span>Live · angemeldet als ${esc(S.me.email)} · Vorschau: Rolle wählen</span><button class="btn sm" id="ll-signout">Abmelden</button>`;$('#ll-signout').onclick=async()=>{await sb.auth.signOut();location.reload()}}
+  $$('#roles [data-role]').forEach(x=>x.onclick=e=>{e.stopPropagation();S.role=x.dataset.role;uiSave();enter()})}
+
+async function liveBoot(){
+  const tok=onbFormId();if(tok!==null)return openOnbFormLive(String(tok));
+  rLoginLive('loading');
+  const {data:{session}}=await sb.auth.getSession();
+  if(new URLSearchParams(location.search).has('code'))history.replaceState(null,'',location.pathname+location.hash);
+  if(!session)return rLoginLive();
+  DB.mail=session.user.email;
+  const {data:prof}=await sb.from('profiles').select('*').eq('id',session.user.id).maybeSingle();
+  if(!prof)return rLoginLive('noaccess');
+  try{await liveLoad(prof)}catch(e){console.warn(e);$('#roles').innerHTML=`<div class="live-login"><h2>Datenbank nicht erreichbar</h2><p>${esc(e.message||e)}</p><button class="btn" onclick="location.reload()">Neu laden</button></div>`;return}
+  liveSubscribe();enter()}
+
+if(LIVE){liveBoot()}else if(onbFormId()!==null){openOnbForm()}else if(S.role){enter()}else{rLogin()}
 window.addEventListener('hashchange',()=>{if(location.hash.startsWith('#onboarding/'))openOnbForm()});
 // Mehrere Tabs: Änderungen aus anderen Tabs (z. B. ausgefüllter Kunden-Fragebogen) sofort übernehmen,
 // damit ein offener Tab nichts mit altem Stand überschreibt.
-window.addEventListener('storage',e=>{if(e.key!==KEY||!e.newValue)return;try{S=JSON.parse(e.newValue)}catch(err){return}
+window.addEventListener('storage',e=>{if(LIVE||e.key!==KEY||!e.newValue)return;try{S=JSON.parse(e.newValue)}catch(err){return}
   if(!$('#onbform').hidden||!S.role)return;updateBell();route();const f=brand(profClient)&&brand(profClient).onbForm;if(location.hash==='#onb'&&f&&f.doneAt&&!f._seen){f._seen=true;toast('✓ Der Kunde hat den Fragebogen ausgefüllt – Antworten stehen in Schritt 4, 5 und 7',5000)}});
 </script>
 
