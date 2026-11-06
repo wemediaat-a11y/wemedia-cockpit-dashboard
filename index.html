@@ -1630,6 +1630,36 @@ function rLoginLive(state){const box=$('#roles');const mb=$('.modebar');if(mb)mb
 function rPreviewLive(){rLogin();const ml=$('#mode-lbl');const mb=$('.modebar');if(mb){mb.hidden=false;mb.innerHTML=`<span>Live · angemeldet als ${esc(S.me.email)} · Vorschau: Rolle wählen</span><button class="btn sm" id="ll-signout">Abmelden</button>`;$('#ll-signout').onclick=async()=>{await sb.auth.signOut();location.reload()}}
   $$('#roles [data-role]').forEach(x=>x.onclick=e=>{e.stopPropagation();S.role=x.dataset.role;uiSave();enter()})}
 
+
+// --- Einmalige Übernahme: Daten aus dem früheren Browser-Modus (localStorage) in die Datenbank ---
+function localDemo(){try{const r=localStorage.getItem(KEY);if(!r)return null;const d=JSON.parse(r);return d&&Array.isArray(d.clients)?d:null}catch(e){return null}}
+function importCands(){const d=localDemo();if(!d)return [];const ids=new Set((S.clients||[]).map(c=>c.id)),names=new Set((S.clients||[]).map(c=>(c.name||'').trim().toLowerCase()));
+  return d.clients.filter(c=>c&&c.id&&!ids.has(c.id)&&!names.has((c.name||'').trim().toLowerCase())).map(c=>({c,posts:(d.posts||[]).filter(p=>p.client===c.id).length,files:((d.brands||{})[c.id]?.files||[]).length,sci:!!(d.brands||{})[c.id]?.sci,mine:c.id>1e12}))}
+function openImport(force){const list=importCands();if(!list.length){if(force)toast('In diesem Browser gibt es keine weiteren Kunden zum Übernehmen');return}
+  $('#dr-title').textContent='Daten aus diesem Browser übernehmen';$('#dr-sub').textContent='Einmalig: bisherige Kunden in die gemeinsame Datenbank holen';
+  $('#dr-body').innerHTML=`<p style="margin-top:0;font-size:13.5px;color:var(--muted)">Bis heute hat das Cockpit alles nur in diesem Browser gespeichert. Wähle, was ins Team-Cockpit soll – danach sehen es alle mit Zugriff (Preise weiterhin nur Admin &amp; Sales).</p>
+    ${list.map(x=>`<label class="ag-item" style="display:flex;gap:12px;align-items:center;cursor:pointer"><input type="checkbox" data-imp="${x.c.id}" ${x.mine?'checked':''} style="width:18px;height:18px;accent-color:#141416"><div><b>${esc(x.c.name)}</b><div style="font-size:12.5px;color:var(--muted)">${esc(x.c.branche||'')} · ${x.posts} Beiträge · ${x.files} Dateien${x.sci?' · Social CI':''}${x.mine?'':' · Demo-Beispiel'}</div></div></label>`).join('')}`;
+  $('#dr-foot').innerHTML=`<button class="btn primary" id="imp-go">Ausgewählte übernehmen</button><button class="btn ghost" id="imp-no" style="margin-left:auto">Nicht jetzt</button>`;
+  $('#imp-no').onclick=()=>{try{localStorage.setItem('wm-import-later','1')}catch(e){}close()};
+  $('#imp-go').onclick=async()=>{const ids=$$('#dr-body [data-imp]').filter(x=>x.checked).map(x=>+x.dataset.imp);if(!ids.length){toast('Bitte mindestens einen Kunden auswählen');return}
+    $('#imp-go').disabled=true;$('#imp-go').textContent='Wird übernommen …';try{const n=await importLocal(ids);close();rAll();toast(`${n} Kunde${n>1?'n':''} übernommen – inkl. Markenprofil, Dateien und Beiträgen`,6000)}catch(e){toast('Übernahme: '+e.message,7000);$('#imp-go').disabled=false;$('#imp-go').textContent='Ausgewählte übernehmen'}};
+  $('#scrim').classList.add('open');$('#drawer').classList.add('open')}
+async function importLocal(ids){const d=localDemo();if(!d)return 0;let n=0;
+  for(const c0 of d.clients.filter(c=>ids.includes(c.id))){const c=clone(c0);if(cl(c.id))continue;
+    const b=clone((d.brands||{})[c.id]);
+    if(b){for(const f of (b.files||[])){if(f.path||!f.data||!String(f.data).startsWith('data:'))continue;
+        try{const blob=await (await fetch(f.data)).blob();const path=`${c.id}/${Date.now()}-${String(f.name||'datei').replace(/[^\w.\-]+/g,'_')}`;
+          const {error}=await sb.storage.from('brand-files').upload(path,blob,{contentType:f.type||blob.type||undefined});if(error)throw error;
+          const {data}=await sb.storage.from('brand-files').createSignedUrl(path,60*60*24*7);f.path=path;DB.urls[path]=data&&data.signedUrl;f.data=DB.urls[path]}catch(e){console.warn('Datei',f.name,e)}}
+      if(b.onbForm&&b.onbForm.token)delete b.onbForm.token}
+    S.clients.push(c);if(b)S.brands[c.id]=b;
+    for(const p of (d.posts||[]).filter(p=>p.client===c.id)){if(!S.posts.some(x=>x.id===p.id)){S.posts.push(clone(p));if(d.briefs&&d.briefs[p.id]){S.briefs=S.briefs||{};S.briefs[p.id]=d.briefs[p.id]}}}
+    for(const k of (d.camps||[]).filter(k=>k.client===c.id))if(!S.camps.some(x=>x.id===k.id))S.camps.push(clone(k));
+    for(const g of (d.sugg||[]).filter(g=>g.client===c.id))if(!S.sugg.some(x=>x.id===g.id))S.sugg.push(clone(g));
+    for(const t of (d.tasks||[]).filter(t=>t.clientId===c.id))if(!S.tasks.some(x=>x.id===t.id))S.tasks.push(clone(t));
+    for(const u of (d.users||[]).filter(u=>u.client===c.id&&u.email))if(!S.users.some(x=>(x.email||'').toLowerCase()===u.email.toLowerCase()))S.users.push({...clone(u),uid:undefined,pending:true});
+    n++}
+  save();return n}
 async function liveBoot(){
   const tok=onbFormId();if(tok!==null)return openOnbFormLive(String(tok));
   rLoginLive('loading');
@@ -1640,7 +1670,8 @@ async function liveBoot(){
   const {data:prof}=await sb.from('profiles').select('*').eq('id',session.user.id).maybeSingle();
   if(!prof)return rLoginLive('noaccess');
   try{await liveLoad(prof)}catch(e){console.warn(e);$('#roles').innerHTML=`<div class="live-login"><h2>Datenbank nicht erreichbar</h2><p>${esc(e.message||e)}</p><button class="btn" onclick="location.reload()">Neu laden</button></div>`;return}
-  liveSubscribe();if(prof.role!=='admin')$('#logout').textContent='Abmelden';enter()}
+  liveSubscribe();if(prof.role!=='admin')$('#logout').textContent='Abmelden';enter();
+  if(prof.role==='admin'){let later=false;try{later=localStorage.getItem('wm-import-later')==='1'}catch(e){}const force=/[?&]import=1/.test(location.search);if(force||(!later&&importCands().some(x=>x.mine)))setTimeout(()=>openImport(force),600)}}
 
 if(LIVE){liveBoot()}else if(onbFormId()!==null){openOnbForm()}else if(S.role){enter()}else{rLogin()}
 window.addEventListener('hashchange',()=>{if(location.hash.startsWith('#onboarding/'))openOnbForm()});
