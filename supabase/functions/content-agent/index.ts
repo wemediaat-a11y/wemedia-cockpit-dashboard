@@ -1,6 +1,7 @@
 // WEMEDIA Content-Agent: Redaktionsplan + Grafik-Briefings mit Claude.
 // Aufruf aus dem Cockpit (sb.functions.invoke('content-agent', {body})) – nur Admin/SMM.
 //   {action:'plan',  client_id, month:'YYYY-MM', count?, notes?}  → {posts:[…], kampagnen:[…]}
+//   {action:'monthbrief', client_id, month, notes?, urls?:[…]}      → {briefing:'…'}  (Diktat/Notizen + Website)
 //   {action:'camps', client_id, month, ad_budget, notes?}           → {kampagnen:[…]}
 //   {action:'brief', post_id | (client_id + post:{…}), notes?}     → {briefing:{…}, caption?}
 // Der API-Schlüssel liegt als Secret ANTHROPIC_API_KEY in Supabase, nie im Browser.
@@ -93,6 +94,17 @@ const TOOLS: Record<string, unknown> = {
       required: ["kampagnen"],
     },
   },
+  monthbrief: {
+    name: "monatsbriefing",
+    description: "Gibt das aufbereitete Monats-Briefing zurück.",
+    input_schema: {
+      type: "object",
+      properties: {
+        briefing: { type: "string", description: "Fertiges Monats-Briefing als kurzer, gegliederter Text (Abschnitte: Termine & Aktionen mit Datum, Themen/Neuigkeiten, Ziele, Material, Offene Fragen). Nur Fakten aus den Quellen, nichts erfinden." },
+      },
+      required: ["briefing"],
+    },
+  },
   brief: {
     name: "briefing",
     description: "Gibt das Grafik-/Produktions-Briefing für den Beitrag zurück.",
@@ -106,6 +118,27 @@ const TOOLS: Record<string, unknown> = {
     },
   },
 };
+
+// Webseite holen und als reinen Text zurückgeben (für das Monats-Briefing)
+async function pageText(url: string): Promise<string> {
+  if (!/^https?:\/\//i.test(url)) return "";
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const r = await fetch(url, { signal: ctl.signal, redirect: "follow", headers: { "User-Agent": "Mozilla/5.0 (WEMEDIA Cockpit Content-Agent)", "Accept-Language": "de-AT,de;q=0.9" } });
+    if (!r.ok) return `[${url}: HTTP ${r.status}]`;
+    const html = (await r.text()).slice(0, 600000);
+    const txt = html
+      .replace(/<(script|style|noscript|svg|iframe)[\s\S]*?<\/\1>/gi, " ")
+      .replace(/<(br|\/p|\/div|\/li|\/h[1-6]|\/tr|\/section|\/article)[^>]*>/gi, "\n")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;|&rsquo;|&lsquo;/g, "'").replace(/&ndash;|&#8211;/g, "–").replace(/&mdash;|&#8212;/g, "—").replace(/&auml;/g, "ä").replace(/&ouml;/g, "ö").replace(/&uuml;/g, "ü").replace(/&szlig;/g, "ß").replace(/&Auml;/g, "Ä").replace(/&Ouml;/g, "Ö").replace(/&Uuml;/g, "Ü").replace(/&euro;/g, "€")
+      .replace(/[ \t]+/g, " ").replace(/\s*\n\s*/g, "\n").replace(/\n{2,}/g, "\n").trim();
+    return txt.slice(0, 14000);
+  } catch (e) {
+    return `[${url}: nicht erreichbar – ${(e as Error).name}]`;
+  } finally { clearTimeout(t); }
+}
 
 // Große/irrelevante Felder raus, damit der Kontext schlank bleibt.
 function slim(v: unknown, depth = 0): unknown {
@@ -224,6 +257,32 @@ AUFGABE: Erstelle den Redaktionsplan für ${client.name} für ${month} mit genau
       if (typeof kamp === "string") { try { kamp = JSON.parse(kamp); } catch { kamp = []; } }
       if (!Array.isArray(kamp)) kamp = [];
       return json({ strategie: out.strategie ?? "", posts: posts2, kampagnen: kamp.slice(0, 3), model: MODEL });
+    }
+
+    if (action === "monthbrief") {
+      const month = String(body.month ?? "").match(/^\d{4}-\d{2}$/)?.[0] ?? "";
+      const urls: string[] = (Array.isArray(body.urls) ? body.urls : []).map(String).filter((u: string) => /^https?:\/\//i.test(u)).slice(0, 5);
+      const pages = await Promise.all(urls.map(async (u) => `QUELLE ${u}:\n${await pageText(u)}`));
+      const notes = String(body.notes ?? "").slice(0, 6000);
+      if (!notes.trim() && !pages.length) return json({ error: "Bitte etwas eintippen/einsprechen oder eine Website hinterlegen." }, 400);
+      const prompt = `${ctxText}
+
+AUFGABE: Erstelle das Monats-Briefing für ${client.name}${month ? ` für ${month}` : ""}.
+QUELLEN:
+1) Notizen/Diktat vom Social Media Management (kann unsauber diktiert sein – Sinn erfassen, nichts weglassen):
+${notes || "(keine)"}
+
+2) Inhalte von der Website des Kunden:
+${pages.join("\n\n") || "(keine)"}
+
+REGELN:
+- Übernimm alle Termine, Veranstaltungen, Kurse, Aktionen und Neuigkeiten${month ? ` aus ${month} (und kurz danach, falls für die Bewerbung relevant)` : ""} mit Datum, Uhrzeit, Ort und Link, wenn vorhanden.
+- Alles aus den Notizen kommt ins Briefing, auch wenn es nicht auf der Website steht.
+- Nichts erfinden. Unklare Punkte unter „Offene Fragen“ sammeln.
+- Kurz und gegliedert, deutsch, als Fließtext mit Zwischenüberschriften und Spiegelstrichen.`;
+      const { out, usage } = await claude(TOOLS.monthbrief as { name: string }, prompt, 8000);
+      await sb.from("events").insert({ type: "agent.monthbrief", client_id: clientId, payload: { month, urls, by: prof.name, usage } });
+      return json({ briefing: String(out.briefing ?? ""), sources: urls, model: MODEL });
     }
 
     if (action === "camps") {

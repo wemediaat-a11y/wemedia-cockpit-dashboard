@@ -208,6 +208,7 @@ td.r,th.r{text-align:right}
 .appr{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:var(--card);border:1px solid var(--hair);border-radius:var(--r-md);padding:12px 16px;margin-bottom:8px;cursor:pointer}
 .appr:hover{border-color:var(--accent-2)}.appr .th{width:48px;height:48px;border-radius:12px}.appr .t{font-weight:600;font-size:14px}.appr .s{font-size:12.5px;color:var(--muted)}
 .ag-item{border:1px solid var(--hair);border-radius:16px;padding:12px 14px;margin-bottom:10px;background:var(--card)}.ag-item.off{opacity:.45}.ag-item .r1{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.ag-item .r1 input[type=checkbox]{width:18px;height:18px;accent-color:#141416}.ag-item input.t{flex:1;min-width:180px;font-weight:600}.ag-item input,.ag-item select,.ag-form input,.ag-form select,.ag-form textarea{border:1px solid #1414161a;border-radius:10px;padding:7px 10px;font:inherit;font-size:13px;background:#fff}.ag-item .idea{font-size:12.5px;color:var(--muted);margin:8px 0 4px}.ag-item details{font-size:12.5px}.ag-item details textarea{width:100%;min-height:110px;margin-top:6px}.ag-item .pl{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--panel);color:var(--muted)}.ag-form .field{margin-bottom:14px}.ag-form textarea{width:100%;min-height:90px}.ag-busy{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding:48px 10px;color:var(--muted)}.ag-busy .sp{width:42px;height:42px;border-radius:50%;border:3px solid #14141614;border-top-color:#141416;animation:spin .9s linear infinite}.ag-strat{background:var(--panel);border-radius:14px;padding:12px 14px;font-size:13px;margin-bottom:14px}
+.mic{display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:3px 9px;border-radius:99px;border:1px solid #14141622;background:#fff;font:inherit;font-size:11.5px;font-weight:600;color:var(--ink);cursor:pointer;vertical-align:middle}.mic:hover{background:var(--panel)}.mic.on{background:#e5484d;border-color:#e5484d;color:#fff;animation:pulse 1.4s ease-in-out infinite}
 .mf{margin-bottom:var(--gap)}.mf-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}.mf-act{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.mf-note{flex-basis:100%;text-align:right;font-size:12.5px;color:var(--rose)}
 .mf-steps{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:16px 0 4px}.mf-s{background:var(--panel);border-radius:12px;padding:8px 10px;font-size:11.5px;color:var(--muted);display:flex;flex-direction:column;gap:2px;min-width:0}.mf-s b{font-size:16px;color:var(--ink);min-height:20px}.mf-s.done{opacity:.55}.mf-s.cur{background:var(--accent);color:var(--on-accent)}.mf-s.cur b{color:var(--on-accent)}
 .mf-brief{margin-top:12px}.mf-brief summary{cursor:pointer;font-weight:600;font-size:13.5px;padding:6px 0}.mf-brief textarea{width:100%;min-height:96px;border:1px solid #1414161a;border-radius:12px;padding:10px 12px;font:inherit;font-size:13px}.mf-files{font-size:12.5px;margin-top:6px}
@@ -903,7 +904,7 @@ function rAgentPlan(){const a=agPlan,c=cl(a.cid);if(!a||!c)return;$('#dr-title')
       <div class="f-row"><div class="field"><label>Monat</label><select id="ag-month">${PLAN_MONTHS.map(m=>`<option value="${m.ym}" ${m.ym===a.month?'selected':''}>${m.label}</option>`).join('')}</select></div><div class="field"><label>Anzahl Beiträge</label><input id="ag-count" type="number" min="1" max="20" value="${a.count}"></div></div>
       ${n?`<div style="font-size:12.5px;color:var(--muted);margin:-6px 0 12px">In diesem Monat sind schon ${n} Beiträge geplant – der Agent nimmt andere Tage und Themen.</div>`:''}
       <div class="field"><label>Monats-Briefing</label>${mb?`<div class="ag-strat" style="white-space:pre-line;margin:0">${esc(mb)}</div>`:`<div style="font-size:12.5px;color:var(--warn)">Noch kein Briefing für ${ymLabel(a.month)} – im Redaktionsplan oben eintragen (oder unten Hinweise geben).</div>`}</div>
-      <div class="field"><label>Zusätzliche Hinweise (optional)</label><textarea id="ag-notes" placeholder="z. B. Fokus auf Reels, Weihnachtsfeier am 20.">${esc(a.notes)}</textarea></div></div>`;
+      <div class="field"><label>Zusätzliche Hinweise (optional) ${MIC}</label><textarea id="ag-notes" placeholder="z. B. Fokus auf Reels, Weihnachtsfeier am 20.">${esc(a.notes)}</textarea></div></div>`;
     foot.innerHTML=`<button class="btn primary" id="ag-go">✦ Plan erstellen</button><button class="btn ghost" id="ag-x" style="margin-left:auto">Abbrechen</button>`;
     $('#ag-x').onclick=close;
     $('#ag-go').onclick=async()=>{a.month=$('#ag-month').value;a.count=Math.max(1,Math.min(20,+$('#ag-count').value||8));a.notes=$('#ag-notes').value.trim();a.err='';a.busy=`Agent plant ${a.count} Beiträge und Kampagnen für ${c.name} …`;rAgentPlan();
@@ -941,6 +942,18 @@ async function agentAccept(withBrief){const a=agPlan,c=cl(a.cid);agCollect();con
   toast(fail?`Plan steht · ${fail} Briefings fehlgeschlagen (im Beitrag „✦ Briefing generieren“) · nächster Schritt: Themen an Kunden`:`Plan & Briefings stehen · nächster Schritt: Themen an ${c.name} schicken`,6000)}
 
 document.addEventListener('click',e=>{const b=e.target.closest('[data-agplan]');if(b){e.preventDefault();openAgentPlan(+b.dataset.agplan,b.dataset.agym)}});
+// --- Spracheingabe: Mikrofon-Knopf neben Textfeldern (Browser-Spracherkennung, Deutsch/Österreich) ---
+const MIC='<button type="button" class="mic" data-mic title="Einsprechen"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span>Einsprechen</span></button>';
+let micRec=null;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-mic]');if(!b)return;e.preventDefault();const box=b.closest('.field')||b.parentElement;const ta=box&&box.querySelector('textarea');if(ta)toggleMic(b,ta)});
+function toggleMic(b,ta){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){toast('Spracheingabe geht in diesem Browser nicht – bitte Chrome, Edge oder Safari nutzen',5000);return}
+  if(micRec){micRec.stop();return}
+  const r=new SR();r.lang='de-AT';r.continuous=true;r.interimResults=true;const base=ta.value.trim()?ta.value.replace(/\s*$/,'')+'\n':'';let fin='';
+  r.onresult=ev=>{let tmp='';for(let i=ev.resultIndex;i<ev.results.length;i++){const t=ev.results[i][0].transcript;if(ev.results[i].isFinal)fin+=t.trim()+' ';else tmp+=t}ta.value=base+fin+tmp};
+  r.onerror=ev=>{if(ev.error==='not-allowed'||ev.error==='service-not-allowed')toast('Bitte den Mikrofon-Zugriff im Browser erlauben',5000)};
+  r.onend=()=>{micRec=null;b.classList.remove('on');b.querySelector('span').textContent='Einsprechen';ta.value=ta.value.trim();ta.dispatchEvent(new Event('change'))};
+  micRec=r;b.classList.add('on');b.querySelector('span').textContent='Stopp';try{r.start();toast('Sprich einfach los – zum Beenden auf „Stopp“')}catch(err){micRec=null;b.classList.remove('on')}}
+
 // --- Monats-Workflow: Briefing → Plan & Kampagnen → Themenfreigabe → Produktion → interne Prüfung → Kundenfreigabe ---
 const ymLabel=ym=>{const [y,m]=String(ym).split('-').map(Number);return (MONTHS_DE[m-1]||'')+' '+y};
 function monthOf(c,ym,create){const b=brand(c.id);if(!b.months){if(!create)return {};b.months={}}if(!b.months[ym]){if(!create)return {};b.months[ym]={brief:'',links:'',files:[]}}return b.months[ym]}
@@ -973,13 +986,24 @@ function monthCardHtml(c,ym){const m=monthOf(c,ym),o=mCounts(c.id,ym),ph=mPhase(
     <div class="mf-steps">${step}</div>
     <details class="mf-brief" ${ph==='briefing'?'open':''}><summary>Monats-Briefing & Material${m.brief||links||(m.files||[]).length||m.client?' ✓':''}</summary>
       ${m.client&&(m.client.text||(m.client.links||[]).length)?`<div class="ag-strat" style="white-space:pre-line"><b>Vom Kunden (${dDE(m.client.at)}):</b> ${esc(m.client.text||'')}${(m.client.links||[]).map(l=>`<br><a href="${esc(l)}" target="_blank" rel="noopener">${esc(l)}</a>`).join('')}</div>`:''}
-      ${team?`<div class="f-row"><div class="field"><label>Was steht an? Themen, Aktionen, Termine, Ziele</label><textarea data-mb="brief" data-cid="${c.id}" data-ym="${ym}" placeholder="z. B. Weihnachtsaktion 10 % ab 1.12., neuer Kurs ab 15.12., Studio 24.–26. geschlossen, Ziel: 30 Probetrainings">${esc(m.brief||'')}</textarea></div>
+      ${team?`<div class="f-row"><div class="field"><label>Was steht an? Themen, Aktionen, Termine, Ziele – tippen oder einsprechen ${MIC}</label><textarea data-mb="brief" data-cid="${c.id}" data-ym="${ym}" placeholder="z. B. Weihnachtsaktion 10 % ab 1.12., neuer Kurs ab 15.12., Studio 24.–26. geschlossen, Ziel: 30 Probetrainings">${esc(m.brief||'')}</textarea>
+        <label style="margin-top:10px">Website & Veranstaltungsseiten des Kunden (bleibt gespeichert)</label><textarea data-mweb="${c.id}" rows="2" style="min-height:52px" placeholder="https://www.kunde.at/veranstaltungen">${esc(brand(c.id).web||'')}</textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px"><button class="btn primary sm" data-mbai="${c.id}" data-ym="${ym}">✦ Briefing aufbereiten</button><span style="font-size:12px;color:var(--muted)">Agent fasst Text, Diktat und Website zu einem sauberen Briefing zusammen</span>${m.briefPrev!=null?`<button class="btn ghost sm" data-mbundo="${c.id}" data-ym="${ym}">↶ vorherige Fassung</button>`:''}</div></div>
         <div class="field"><label>Fotos & Videos: Drive-/Dropbox-Links (einer pro Zeile)</label><textarea data-mb="links" data-cid="${c.id}" data-ym="${ym}" placeholder="https://drive.google.com/…">${esc(links)}</textarea>
         <label class="btn sm" style="margin-top:8px;cursor:pointer">+ Dateien hochladen<input type="file" multiple accept="image/*,video/*,.pdf" data-mfiles="${c.id}" data-ym="${ym}" hidden></label>
         <div class="mf-files">${(m.files||[]).map(f=>`<a href="${esc(f.data||'#')}" target="_blank" rel="noopener">${esc(f.name)}</a>`).join(' · ')}</div></div></div>`:`<div style="white-space:pre-line">${esc(m.brief||'–')}</div>`}
     </details></div>`}
 function bindMonthCard(c,ym){
   $$('#plan-mcard [data-mb]').forEach(t=>t.onchange=()=>{const m=monthOf(c,ym,true);m[t.dataset.mb]=t.value;save();toast('Monats-Briefing gespeichert')});
+  $$('#plan-mcard [data-mweb]').forEach(t=>t.onchange=()=>{brand(c.id).web=t.value.trim();save();toast('Website gespeichert')});
+  $$('#plan-mcard [data-mbundo]').forEach(b=>b.onclick=()=>{const m=monthOf(c,ym,true);m.brief=m.briefPrev;delete m.briefPrev;save();rPlan();toast('Vorherige Fassung wiederhergestellt')});
+  $$('#plan-mcard [data-mbai]').forEach(b=>b.onclick=async()=>{const m=monthOf(c,ym,true);const ta=$('#plan-mcard [data-mb=brief]'),lt=$('#plan-mcard [data-mb=links]'),wt=$('#plan-mcard [data-mweb]');
+    m.brief=ta.value;m.links=lt?lt.value:m.links;brand(c.id).web=wt.value.trim();const urls=(brand(c.id).web||'').split(/\s+/).filter(x=>/^https?:\/\//.test(x));
+    if(!m.brief.trim()&&!urls.length){toast('Erst etwas eintippen/einsprechen oder eine Website eintragen');return}
+    b.disabled=true;b.textContent='✦ Agent liest '+(urls.length?'Website & ':'')+'Notizen …';
+    try{const r=await agentCall({action:'monthbrief',client_id:c.id,month:ym,notes:[m.brief,m.client&&m.client.text?'Vom Kunden: '+m.client.text:''].filter(Boolean).join('\n'),urls});
+      m.briefPrev=m.brief;m.brief=r.briefing;save();rPlan();const d=$('#plan-mcard details');if(d)d.open=true;toast('Briefing aufbereitet – bitte kurz prüfen',5000)}
+    catch(e){toast('Agent: '+e.message,6000);b.disabled=false;b.textContent='✦ Briefing aufbereiten'}});
   $$('#plan-mcard [data-mfiles]').forEach(inp=>inp.onchange=async()=>{const m=monthOf(c,ym,true);m.files=m.files||[];const fs=[...inp.files];if(!fs.length)return;
     if(!LIVE){for(const f of fs){const data=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(f)});m.files.push({name:f.name,type:f.type,data})}save();rPlan();return}
     toast('Lädt hoch …');let n=0;for(const f of fs){if(f.size>50*1024*1024){toast(f.name+': max. 50 MB');continue}const path=`${c.id}/m-${ym}/${Date.now()}-${f.name.replace(/[^\w.\-]+/g,'_')}`;
@@ -1022,7 +1046,7 @@ function rPortalThemes(cid){const box=$('#po-themes');if(!box)return;const c=cl(
     <div class="field"><label>Anmerkung (optional)</label><input id="th-note" placeholder="z. B. Bitte den 24. weglassen"></div>
     <button class="btn primary" id="th-go">Themen bestätigen</button></div>`}
   if(showBrief&&!th.length)h+=`<div class="card mf" style="margin-bottom:var(--gap)"><div class="card-head"><div><h2>Was steht im ${ymLabel(nx)} an?</h2><div class="sub">Aktionen, Termine, Neuheiten, Schließtage – und Links zu Fotos/Videos (z. B. Google Drive). Daraus plant Wemedia Ihren Monat. ${m.client?'<b>✓ Danke, erhalten.</b> Sie können es jederzeit ergänzen.':''}</div></div></div>
-    <div class="field"><textarea id="mb-text" placeholder="z. B. Weihnachtsaktion ab 1.12., neuer Kurs ab 15.12., 24.–26. geschlossen">${esc((m.client&&m.client.text)||'')}</textarea></div>
+    <div class="field"><label>Tippen oder einsprechen ${MIC}</label><textarea id="mb-text" placeholder="z. B. Weihnachtsaktion ab 1.12., neuer Kurs ab 15.12., 24.–26. geschlossen">${esc((m.client&&m.client.text)||'')}</textarea></div>
     <div class="field"><label>Links zu Fotos & Videos (einer pro Zeile)</label><textarea id="mb-links" placeholder="https://drive.google.com/…">${esc(((m.client&&m.client.links)||[]).join('\n'))}</textarea></div>
     <button class="btn primary" id="mb-go">An Wemedia senden</button></div>`;
   box.innerHTML=h;
