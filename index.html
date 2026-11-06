@@ -1368,6 +1368,10 @@ const q=$('#q'),pop=$('#search-pop');if(q){q.addEventListener('input',()=>{const
 document.documentElement.dataset.theme='light';
 if(onbFormId()!==null){openOnbForm()}else if(S.role){enter()}else{rLogin()}
 window.addEventListener('hashchange',()=>{if(location.hash.startsWith('#onboarding/'))openOnbForm()});
+// Mehrere Tabs: Änderungen aus anderen Tabs (z. B. ausgefüllter Kunden-Fragebogen) sofort übernehmen,
+// damit ein offener Tab nichts mit altem Stand überschreibt.
+window.addEventListener('storage',e=>{if(e.key!==KEY||!e.newValue)return;try{S=JSON.parse(e.newValue)}catch(err){return}
+  if(!$('#onbform').hidden||!S.role)return;updateBell();route();const f=brand(profClient)&&brand(profClient).onbForm;if(location.hash==='#onb'&&f&&f.doneAt&&!f._seen){f._seen=true;toast('✓ Der Kunde hat den Fragebogen ausgefüllt – Antworten stehen in Schritt 4, 5 und 7',5000)}});
 </script>
 
 </body>
