@@ -3,6 +3,7 @@
 //   {action:'plan',  client_id, month:'YYYY-MM', count?, notes?}  → {posts:[…], kampagnen:[…]}
 //   {action:'monthbrief', client_id, month, notes?, urls?:[…]}      → {briefing:'…'}  (Diktat/Notizen + Website)
 //   {action:'ci', client_id, url, name?, type?}                       → {colors:[{hex,name}], font_head, font_body}  (CI-PDF oder Logo-Bild)
+//   {action:'prefill', client_id, url}                              → Vorschlag Positionierung/Tonalität aus der Website
 //   {action:'camps', client_id, month, ad_budget, notes?}           → {kampagnen:[…]}
 //   {action:'brief', post_id | (client_id + post:{…}), notes?}     → {briefing:{…}, caption?}
 // Der API-Schlüssel liegt als Secret ANTHROPIC_API_KEY in Supabase, nie im Browser.
@@ -107,6 +108,26 @@ const TOOLS: Record<string, unknown> = {
         note: { type: "string", description: "Kurzer Hinweis, falls unsicher" },
       },
       required: ["colors"],
+    },
+  },
+  prefill: {
+    name: "markenprofil",
+    description: "Gibt den Vorschlag für Positionierung & Tonalität zurück.",
+    input_schema: {
+      type: "object",
+      properties: {
+        pos: { type: "string", description: "Positionierung in einem Satz – so, wie der Kunde es sagen würde" },
+        offers: { type: "string", description: "Die 2–4 wichtigsten Angebote/Leistungen, mit Komma getrennt" },
+        aud: { type: "string", description: "Zielgruppe: Alter, Region, Situation" },
+        tones: { type: "array", items: { type: "string", enum: ["Locker & Du", "Seriös & Sie", "Motivierend", "Humorvoll", "Premium", "Bodenständig", "Fachlich & erklärend"] }, maxItems: 3 },
+        anrede: { type: "string", enum: ["Du", "Sie"] },
+        toneNote: { type: "string", description: "Stil in eigenen Worten, z. B. kurze Sätze, wenig Emojis" },
+        dos: { type: "array", items: { type: "string" }, maxItems: 6, description: "Was soll gezeigt werden (konkret, z. B. Referent:innen, Seminarräume)" },
+        donts: { type: "array", items: { type: "string" }, maxItems: 5, description: "Was soll vermieden werden" },
+        tags: { type: "string", description: "3–6 Stamm-Hashtags mit #" },
+        quellen: { type: "string", description: "Welche Seiten verwendet wurden und was unsicher ist" },
+      },
+      required: ["pos", "offers", "aud", "tones", "anrede", "dos"],
     },
   },
   monthbrief: {
@@ -293,6 +314,34 @@ AUFGABE: Erstelle den Redaktionsplan für ${client.name} für ${month} mit genau
       await sb.from("events").insert({ type: "agent.ci", client_id: clientId, payload: { by: prof.name, usage } });
       const colors = (Array.isArray(out.colors) ? out.colors : []).map((c: { hex?: string; name?: string }) => ({ hex: String(c.hex ?? "").trim(), name: c.name ?? "" })).filter((c: { hex: string }) => /^#?[0-9a-f]{6}$/i.test(c.hex)).map((c: { hex: string; name: string }) => ({ ...c, hex: (c.hex.startsWith("#") ? c.hex : "#" + c.hex).toLowerCase() }));
       return json({ colors, font_head: out.font_head || "", font_body: out.font_body || "", note: out.note || "", model: MODEL });
+    }
+
+    if (action === "prefill") {
+      const start = String(body.url ?? "").trim();
+      if (!/^https?:\/\//i.test(start)) return json({ error: "Bitte die Website mit https:// eintragen" }, 400);
+      // Startseite + bis zu 4 passende Unterseiten (Über uns, Angebot, Leistungen, Seminare …)
+      const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 12000);
+      let home = "";
+      try { const r = await fetch(start, { signal: ctl.signal, redirect: "follow", headers: { "User-Agent": "Mozilla/5.0 (WEMEDIA Cockpit Content-Agent)" } }); home = r.ok ? await r.text() : ""; } catch { home = ""; } finally { clearTimeout(tm); }
+      const base = new URL(start);
+      const links = [...home.matchAll(/href=["']([^"'#]+)["']/gi)].map((m) => { try { return new URL(m[1], base).href; } catch { return ""; } })
+        .filter((u) => u && new URL(u).host === base.host && /(ueber|über|about|team|wir|angebot|leistung|service|seminar|kurs|ausbildung|lehrgang|veranstaltung|produkt|philosophie|konzept)/i.test(u) && !/\.(pdf|jpg|png|zip)$/i.test(u));
+      const pick = [...new Set(links)].slice(0, 4);
+      const pages = await Promise.all([start, ...pick].map(async (u) => `QUELLE ${u}:\n${(await pageText(u)).slice(0, 7000)}`));
+      const prompt = `${ctxText}
+
+AUFGABE: Fülle das Markenprofil (Positionierung & Tonalität) für ${client.name} vor – auf Basis der Website. Das Social-Media-Team prüft und korrigiert danach.
+WEBSITE:
+${pages.join("\n\n")}
+
+REGELN:
+- Nur was die Website hergibt bzw. klar daraus folgt; nichts erfinden. Positionierung in der Sprache des Kunden, keine Werbefloskeln.
+- Tonalität und Anrede so wählen, wie die Website selbst schreibt.
+- Do's: konkrete Motive, die zu diesem Unternehmen passen. Don'ts: was der Marke schaden würde.
+- Unter „quellen“ kurz notieren, was unsicher ist.`;
+      const { out, usage } = await claude(TOOLS.prefill as { name: string }, prompt, 6000);
+      await sb.from("events").insert({ type: "agent.prefill", client_id: clientId, payload: { url: start, pages: pick.length + 1, by: prof.name, usage } });
+      return json({ ...out, pages: [start, ...pick], model: MODEL });
     }
 
     if (action === "monthbrief") {
