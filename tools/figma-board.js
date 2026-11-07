@@ -100,6 +100,7 @@ async function makeVariables(client, colors) {
         if (!v)
             v = figma.variables.createVariable(vname, coll, 'COLOR');
         const rgb = hexRgb(c.hex);
+        v.scopes = ['FRAME_FILL', 'SHAPE_FILL', 'TEXT_FILL', 'STROKE_COLOR'];
         v.setValueForMode(modeId, { r: rgb.r, g: rgb.g, b: rgb.b, a: 1 });
         v.description = c.use || '';
         out.push(v);
@@ -166,6 +167,7 @@ async function build(data, logoBytes) {
     const sci = data.sci;
     const client = String(data.client || 'Kunde').slice(0, 60);
     const colors = (sci.colors || []).slice(0, 8);
+    { const seen = {}; colors.forEach((c, i) => { const r = c.role || 'Farbe'; seen[r] = (seen[r] || 0) + 1; if (seen[r] > 1) colors[i] = Object.assign({}, c, { role: r + ' ' + seen[r] }); }); }
     if (!colors.length)
         throw new Error('Im Board-Code fehlen die Farben.');
     const F = await loadFonts(sci.fonts.head, sci.fonts.body);
@@ -261,7 +263,7 @@ async function build(data, logoBytes) {
     const hs = txt('Headline Aa', F.H, 64, INK, 105);
     await hs.setTextStyleIdAsync(styles['Headline'].id);
     addFill(tc1, hs);
-    addFill(tc1, txt(F.H.family + ' ' + F.H.style + (F.headOk ? '' : ' (Ersatz – „' + sci.fonts.head + '“ ist auf diesem Rechner nicht installiert)'), F.B, 15, MUTED));
+    addFill(tc1, txt(F.H.family + ' ' + F.H.style + (F.headOk ? '' : ' (Ersatz – „' + sci.fonts.head + '“ ist in Figma nicht verfügbar – lokal installieren und Textstile umstellen)'), F.B, 15, MUTED));
     const tc2 = af('Fließtext', 'VERTICAL', 10, 32, [solid(CARD)]);
     tc2.cornerRadius = 20;
     trow.appendChild(tc2);
@@ -269,7 +271,7 @@ async function build(data, logoBytes) {
     const bs = txt('Fließtext und Untertitel – gut lesbar, auch klein auf dem Handy.', F.B, 26, INK, 140);
     await bs.setTextStyleIdAsync(styles['Fließtext'].id);
     addFill(tc2, bs);
-    addFill(tc2, txt(F.B.family + ' ' + F.B.style + (F.bodyOk ? '' : ' (Ersatz – „' + sci.fonts.body + '“ ist auf diesem Rechner nicht installiert)'), F.B, 15, MUTED));
+    addFill(tc2, txt(F.B.family + ' ' + F.B.style + (F.bodyOk ? '' : ' (Ersatz – „' + sci.fonts.body + '“ ist in Figma nicht verfügbar – lokal installieren und Textstile umstellen)'), F.B, 15, MUTED));
     const sFmt = section('Formate');
     const frow = af('Formate', 'HORIZONTAL', 32, 0);
     frow.counterAxisAlignItems = 'MAX';
