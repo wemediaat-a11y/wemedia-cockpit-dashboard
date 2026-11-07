@@ -461,6 +461,8 @@ td.r,th.r{text-align:right}
 .kv-light{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px;background:#fff;border-radius:14px;padding:12px 14px}.kv-light span{color:var(--muted)}
 /* social ci */
 .sci{display:flex;flex-direction:column;gap:12px}
+.sci-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;align-items:start}.sci-board a{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:inherit}.sci-board img{width:100%;object-fit:cover;border-radius:12px;box-shadow:0 1px 0 #14141614,0 10px 24px -12px #14141655;transition:transform .2s}.sci-board a:hover img{transform:translateY(-2px)}.sci-board span{font-size:11.5px;color:var(--muted)}.sci-board b{display:block;color:var(--ink);font-size:12.5px}
+.sci-txt{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}.sci-txt>div{background:var(--card);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}.sci-txt b{color:var(--ink);font-size:14px;line-height:1.25}.sci-txt small{font-size:11px}.sci-txt summary{cursor:pointer;color:var(--ink);font-weight:600}
 .sci-ex{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}.sci-ex>div{width:172px;display:flex;flex-direction:column;gap:6px}
 .sci-mock{position:relative;width:172px;border-radius:10px;overflow:hidden;box-shadow:0 1px 0 #14141614,0 6px 18px -8px #14141640;display:flex;flex-direction:column;padding:13px 12px;box-sizing:border-box}
 .sci-mock .ac{width:22px;height:3px;border-radius:2px;margin-bottom:8px}.sci-mock h5{margin:0;font-size:15px;line-height:1.05;font-weight:800;letter-spacing:-.01em}.sci-mock p{margin:5px 0 0;font-size:8.5px;line-height:1.3;opacity:.85}
@@ -1507,10 +1509,14 @@ function sciPostHtml(s,b,p,i){const cols=s.colors||[];const by=re=>(cols.find(x=
   const logo=b.logoSvg?`<img alt="" src="data:image/svg+xml;utf8,${encodeURIComponent(b.logoSvg)}">`:'';
   return `<div><div class="sci-mock" style="aspect-ratio:1/${ratio};background:${esc(bg)};color:${esc(fg)};font-family:'${esc(s.fonts.body)}',var(--font)"><i class="ac" style="background:${esc(bar)}"></i><h5 style="font-family:'${esc(s.fonts.head)}',var(--font)">${esc(p.headline)}</h5><p>${esc(p.subline||'')}</p><div class="ph" style="background:${esc(fg)}14">${esc(p.bildidee||'')}</div><div class="ft">${p.cta?`<span class="cta" style="background:${esc(bar)};color:${esc(sciLum(bar)>.55?dark:light)}">${esc(p.cta)}</span>`:'<span></span>'}${logo}</div></div>
    <small><b>${esc(p.saeule||'')}</b> · ${esc(p.format||'')}</small>${p.caption?`<details><summary>Caption</summary>${esc(p.caption)}</details>`:''}</div>`}
-function sciExHtml(c,b){const s=b.sci,ex=(s.examples&&s.examples.length)?s.examples:sciExFallback(s),busy=sciExBusy===c.id;
-  return `<div class="sci-sec"><h4>Beispiel-Posts</h4><div class="sub" style="margin:-4px 0 10px">${busy?'✦ Agent schreibt Beispiel-Posts für diese Marke …':s.examples&&s.examples.length?'So sieht das CI in der Praxis aus – Grafik übernimmt sie ins Figma-Board.':'Platzhalter – der Agent füllt sie mit echten Themen der Marke.'}</div>
-   <div class="sci-ex" style="${busy?'opacity:.45':''}">${ex.map((p,i)=>sciPostHtml(s,b,p,i)).join('')}</div>
-   ${sciEdit||busy?'':`<button class="btn" id="sci-ex" style="margin-top:10px">${s.examples&&s.examples.length?'↻ Neue Beispiele':'✦ Beispiel-Posts erstellen'}</button>`}</div>`}
+function sciExHtml(c,b){const s=b.sci,busy=sciExBusy===c.id,board=(b.files||[]).filter(f=>f.kind==='board'&&f.data);
+  if(board.length){const furl=b.figma&&b.figma.url;
+    return `<div class="sci-sec"><h4>Posts aus dem Figma-Board</h4><div class="sub" style="margin:-4px 0 12px">So sieht das Social CI in der Praxis aus – echte Renderings aus „${esc(c.name.split(' ')[0])} · Social“.${furl?` <a class="link" href="${esc(furl)}" target="_blank" rel="noopener">Board öffnen ↗</a>`:''}</div>
+     <div class="sci-board">${board.map(f=>`<a ${furl?`href="${esc(furl.split('?')[0])}?node-id=${esc(String(f.figmaNode||'').replace(':','-'))}" target="_blank" rel="noopener"`:''}><img loading="lazy" alt="${esc(f.name)}" src="${esc(f.data)}" style="aspect-ratio:${f.format==='Story'?'9/16':'4/5'}"><span><b>${esc(f.name)}</b>${esc(f.format||'')}</span></a>`).join('')}</div></div>`}
+  const ex=s.examples||[];
+  return `<div class="sci-sec"><h4>Beispiel-Posts (Texte)</h4><div class="sub" style="margin:-4px 0 10px">${busy?'✦ Agent schreibt Beispiel-Posts für diese Marke …':'Die Gestaltung entsteht im Figma-Board – sobald es steht, erscheinen hier die echten Posts.'}</div>
+   ${ex.length?`<div class="sci-txt" style="${busy?'opacity:.45':''}">${ex.map(p=>`<div><small>${esc(p.saeule||'')} · ${esc(p.format||'')}</small><b>${esc(p.headline)}</b><span>${esc(p.subline||'')}</span>${p.caption?`<details><summary>Caption</summary>${esc(p.caption)}</details>`:''}</div>`).join('')}</div>`:''}
+   ${sciEdit||busy?'':`<button class="btn" id="sci-ex" style="margin-top:10px">${ex.length?'↻ Neue Texte':'✦ Beispiel-Texte erstellen'}</button>`}</div>`}
 async function sciExamples(c,b,quiet){if(!LIVE||!b.sci)return;sciExBusy=c.id;rOb();
   try{const r=await agentCall({action:'sciex',client_id:c.id,sci:b.sci});if(r.posts&&r.posts.length){b.sci.examples=r.posts;learn(c.id,'Beispiel-Posts zum Social CI v'+b.sci.v+' vom Agent erstellt','Onboarding');save()}else if(!quiet)toast('Der Agent hat keine Beispiele geliefert – bitte nochmal')}
   catch(e){if(!quiet)toast('Beispiel-Posts: '+e.message)}finally{sciExBusy=0;rOb()}}
