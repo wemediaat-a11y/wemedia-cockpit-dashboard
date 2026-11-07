@@ -461,6 +461,13 @@ td.r,th.r{text-align:right}
 .kv-light{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px;background:#fff;border-radius:14px;padding:12px 14px}.kv-light span{color:var(--muted)}
 /* social ci */
 .sci{display:flex;flex-direction:column;gap:12px}
+.sci-ex{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}.sci-ex>div{width:172px;display:flex;flex-direction:column;gap:6px}
+.sci-mock{position:relative;width:172px;border-radius:10px;overflow:hidden;box-shadow:0 1px 0 #14141614,0 6px 18px -8px #14141640;display:flex;flex-direction:column;padding:13px 12px;box-sizing:border-box}
+.sci-mock .ac{width:22px;height:3px;border-radius:2px;margin-bottom:8px}.sci-mock h5{margin:0;font-size:15px;line-height:1.05;font-weight:800;letter-spacing:-.01em}.sci-mock p{margin:5px 0 0;font-size:8.5px;line-height:1.3;opacity:.85}
+.sci-mock .ph{flex:1;margin:9px 0 8px;border-radius:7px;display:flex;align-items:flex-end;padding:6px;font-size:7.5px;line-height:1.3;opacity:.9;min-height:40px}.sci-mock .ft{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.sci-mock .cta{font-size:8px;font-weight:700;padding:3px 7px;border-radius:99px;white-space:nowrap}.sci-mock img{max-width:44%;max-height:22px;object-fit:contain}
+.sci-ex small{font-size:11px;color:var(--muted)}.sci-ex small b{color:var(--ink)}.sci-ex details{font-size:11.5px;color:var(--muted);line-height:1.4}.sci-ex summary{cursor:pointer;color:var(--ink);font-weight:600}
+
 .sci-sec{background:#fff;border-radius:16px;padding:16px}.sci-sec h4{margin:0 0 10px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
 .sci-cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}.sci-cols div{border-radius:12px;overflow:hidden;background:var(--card)}.sci-cols i{display:block;height:58px}.sci-cols span{display:block;padding:7px 10px;font-size:11.5px;line-height:1.3}.sci-cols span b{display:block;font-size:12.5px}
 .sci-type{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sci-type div{background:var(--card);border-radius:12px;padding:12px}.sci-type .big{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.1}.sci-type small{display:block;font-size:11.5px;color:var(--muted);margin-top:4px}
@@ -1487,6 +1494,25 @@ function genSci(c,b){const d=obData(c,b),cols=(b.colors||[]).length?b.colors:['#
     pillars:(PILLARS[c.branche]||[['Über uns','Wer wir sind'],['Leistung','Was wir können'],['Einblicke','Hinter den Kulissen'],['Angebot','Aktuelle Aktionen']]).map(x=>({t:x[0],s:x[1]})),
     sources:(d.sources||[]).map(x=>src[x]).filter(Boolean),
     goal:c.goal||''}}
+// Beispiel-Posts zum Social CI: zeigen, wie das CI in der Praxis aussieht
+let sciExBusy=0;
+function sciLum(h){const x=String(h||'').replace('#','');const f=x.length===3?x.split('').map(y=>y+y).join(''):x.slice(0,6);const [r,g,bb]=[0,2,4].map(i=>parseInt(f.substr(i,2),16)/255);return .2126*r+.7152*g+.0722*bb||0}
+function sciExFallback(s){const F=['Feed','Story','Feed','Quadrat'];return s.pillars.slice(0,4).map((p,i)=>({saeule:p.t,format:F[i],headline:p.t,subline:p.s,cta:'Mehr erfahren',bildidee:'Bildidee folgt',caption:'',demo:true}))}
+function sciPostHtml(s,b,p,i){const cols=s.colors||[];const by=re=>(cols.find(x=>re.test(x.role))||{}).hex;
+  const light=cols.map(x=>x.hex).filter(h=>sciLum(h)>.8)[0]||'#ffffff',dark=cols.map(x=>x.hex).sort((a,c)=>sciLum(a)-sciLum(c))[0]||'#141416',prim=by(/Prim/)||dark;
+  const acc=cols.map(x=>x.hex).find(h=>h!==prim&&h!==light&&h!==dark)||prim;
+  const inv=i%2===1,bg=inv?prim:light,fg=inv?(sciLum(prim)<.45?light:dark):(sciLum(dark)<.3?dark:'#141416'),bar=inv?acc:prim;
+  const ratio=/Story/.test(p.format)?16/9:/Quadrat/.test(p.format)?1:1.25;
+  const logo=b.logoSvg?`<img alt="" src="data:image/svg+xml;utf8,${encodeURIComponent(b.logoSvg)}">`:'';
+  return `<div><div class="sci-mock" style="aspect-ratio:1/${ratio};background:${esc(bg)};color:${esc(fg)};font-family:'${esc(s.fonts.body)}',var(--font)"><i class="ac" style="background:${esc(bar)}"></i><h5 style="font-family:'${esc(s.fonts.head)}',var(--font)">${esc(p.headline)}</h5><p>${esc(p.subline||'')}</p><div class="ph" style="background:${esc(fg)}14">${esc(p.bildidee||'')}</div><div class="ft">${p.cta?`<span class="cta" style="background:${esc(bar)};color:${esc(sciLum(bar)>.55?dark:light)}">${esc(p.cta)}</span>`:'<span></span>'}${logo}</div></div>
+   <small><b>${esc(p.saeule||'')}</b> · ${esc(p.format||'')}</small>${p.caption?`<details><summary>Caption</summary>${esc(p.caption)}</details>`:''}</div>`}
+function sciExHtml(c,b){const s=b.sci,ex=(s.examples&&s.examples.length)?s.examples:sciExFallback(s),busy=sciExBusy===c.id;
+  return `<div class="sci-sec"><h4>Beispiel-Posts</h4><div class="sub" style="margin:-4px 0 10px">${busy?'✦ Agent schreibt Beispiel-Posts für diese Marke …':s.examples&&s.examples.length?'So sieht das CI in der Praxis aus – Grafik übernimmt sie ins Figma-Board.':'Platzhalter – der Agent füllt sie mit echten Themen der Marke.'}</div>
+   <div class="sci-ex" style="${busy?'opacity:.45':''}">${ex.map((p,i)=>sciPostHtml(s,b,p,i)).join('')}</div>
+   ${sciEdit||busy?'':`<button class="btn" id="sci-ex" style="margin-top:10px">${s.examples&&s.examples.length?'↻ Neue Beispiele':'✦ Beispiel-Posts erstellen'}</button>`}</div>`}
+async function sciExamples(c,b,quiet){if(!LIVE||!b.sci)return;sciExBusy=c.id;rOb();
+  try{const r=await agentCall({action:'sciex',client_id:c.id,sci:b.sci});if(r.posts&&r.posts.length){b.sci.examples=r.posts;learn(c.id,'Beispiel-Posts zum Social CI v'+b.sci.v+' vom Agent erstellt','Onboarding');save()}else if(!quiet)toast('Der Agent hat keine Beispiele geliefert – bitte nochmal')}
+  catch(e){if(!quiet)toast('Beispiel-Posts: '+e.message)}finally{sciExBusy=0;rOb()}}
 function sciHtml(c,b){const s=b.sci,ed=!!sciEdit;const lst=(k,a)=>ed?`<textarea data-sci="${k}" style="width:100%;min-height:120px;border-radius:12px;border:1px solid #1414161a;padding:10px 12px;font:inherit;font-size:13px">${esc(a.join('\n'))}</textarea>`:`<ul class="sci-list">${a.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
   return `<div class="ob-card"><div class="sci-st" style="margin-bottom:12px"><div style="flex:1;min-width:200px"><h3>Social CI · ${esc(c.name)}</h3><div class="sub" style="margin:0">Version ${s.v} · erstellt ${esc(s.at)} vom ${esc(s.by)}${s.okAt?` · freigegeben ${esc(s.okAt)} von ${esc(s.okBy)}`:''}</div></div><span class="pill ${s.status==='freigegeben'?'good':'warn'}">${s.status==='freigegeben'?'Freigegeben':'Entwurf – bitte prüfen'}</span></div>
    <div class="sci">
@@ -1497,6 +1523,7 @@ function sciHtml(c,b){const s=b.sci,ed=!!sciEdit;const lst=(k,a)=>ed?`<textarea 
     <div class="sci-sec"><h4>Bildsprache</h4>${lst('imagery',s.imagery)}${s.sources.length?`<div class="chips" style="margin-top:10px">${s.sources.map(x=>`<i>${esc(x)}</i>`).join('')}</div>`:''}</div>
     <div class="sci-sec"><h4>Tonalität & Captions</h4>${lst('voice',s.voice)}</div>
     <div class="sci-sec"><h4>Content-Säulen</h4><div class="sci-pill">${s.pillars.map(p=>`<div><b>${esc(p.t)}</b>${esc(p.s)}</div>`).join('')}</div>${s.goal?`<div style="font-size:12.5px;color:var(--muted);margin-top:10px">Zahlt ein auf: <b style="color:var(--ink)">${esc(s.goal)}</b></div>`:''}</div>
+    ${sciExHtml(c,b)}
    </div>
    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">${ed?`<button class="btn primary" id="sci-save">Änderungen übernehmen</button><button class="btn" id="sci-cancel">Abbrechen</button>`:s.status==='freigegeben'?`<button class="btn" id="sci-edit">Anpassen</button><button class="btn" id="sci-regen">Neu erstellen (v${s.v+1})</button>`:`<button class="btn primary" id="sci-ok">✓ Social CI freigeben</button><button class="btn" id="sci-edit">Regeln anpassen</button><button class="btn" id="sci-regen">Neu erstellen</button>`}</div>
    ${s.status==='freigegeben'?`<div class="ob-ok" style="margin-top:12px">${b.figma?`Figma-Board steht · <a href="${esc(b.figma.url)}" target="_blank" rel="noopener" style="color:inherit">in Figma öffnen ↗</a>`:'Figma-Board ist bei Grafik in Arbeit.'}</div>`:''}<div style="font-size:12px;color:var(--muted);margin-top:10px">${s.status==='freigegeben'?'Grafik baut daraus das Figma-Board. Farben & Schriften änderst du in Schritt 4, Tonalität in Schritt 5 – danach „Neu erstellen“.':'Farben, Schriften oder Tonalität falsch? In Schritt 4 bzw. 5 korrigieren und „Neu erstellen“ klicken.'}</div></div>`}
@@ -1547,7 +1574,7 @@ function obBind(c,b,s,i){const d=b.ob.d;
     b.ob.st[s.id]='done';if(s.id==='uebergabe')b.onb.vertrag=true;if(s.id==='positionierung'||s.id==='marke'){b.proposal=null}obGo(c,b,i+1)};
   const sk=$('#ob-skip');if(sk)sk.onclick=()=>{b.ob.st[s.id]='skip';obGo(c,b,i+1);toast('Als „später erledigen“ markiert – bleibt in der Übersicht gelb')};
   const pv=$('#ob-prev');if(pv)pv.onclick=()=>obGo(c,b,i-1);
-  const fin=$('#ob-finish');if(fin)fin.onclick=()=>{fin.disabled=true;fin.textContent='✦ Agent erstellt das Social CI …';setTimeout(()=>{b.sci=genSci(c,b);b.ob.closedAt=dDE(TODAY);b.ob.st.abschluss=null;learn(c.id,'Social CI v'+b.sci.v+' vom Agent erstellt – wartet auf Prüfung','Onboarding');save();rOb();toast('Social CI erstellt – bitte prüfen und freigeben')},900)};
+  const fin=$('#ob-finish');if(fin)fin.onclick=()=>{fin.disabled=true;fin.textContent='✦ Agent erstellt das Social CI …';setTimeout(()=>{b.sci=genSci(c,b);b.ob.closedAt=dDE(TODAY);b.ob.st.abschluss=null;learn(c.id,'Social CI v'+b.sci.v+' vom Agent erstellt – wartet auf Prüfung','Onboarding');save();rOb();toast('Social CI erstellt – bitte prüfen und freigeben');sciExamples(c,b,true)},900)};
   const ok=$('#sci-ok');if(ok)ok.onclick=()=>{const sc=b.sci;sc.status='freigegeben';sc.okAt=dDE(TODAY);sc.okBy=me().user.name;b.onb.brand=true;b.proposal=null;const fullyDone=obCheckDone(c,b);
     learn(c.id,`Social CI v${sc.v} freigegeben – Grundlage für alle Briefings, Creatives und Kampagnen`,'Onboarding');
     S.tasks=S.tasks||[];const has=k=>S.tasks.some(t=>t.kind===k&&t.clientId===c.id&&!t.done);
@@ -1557,7 +1584,8 @@ function obBind(c,b,s,i){const d=b.ob.d;
   const se=$('#sci-edit');if(se)se.onclick=()=>{sciEdit=true;rOb()};
   const sca=$('#sci-cancel');if(sca)sca.onclick=()=>{sciEdit=false;rOb()};
   const ss=$('#sci-save');if(ss)ss.onclick=()=>{$$('#ob-main [data-sci]').forEach(t=>{b.sci[t.dataset.sci]=t.value.split('\n').map(x=>x.trim()).filter(Boolean)});sciEdit=false;learn(c.id,'Social CI von '+me().user.name+' angepasst','Onboarding');save();rOb();toast('Social CI angepasst')};
-  const rg=$('#sci-regen');if(rg)rg.onclick=()=>{if(b.sci.status==='freigegeben'&&!confirm('Neue Version erstellen? Sie muss danach wieder freigegeben werden.'))return;b.sci=genSci(c,b);b.ob.st.abschluss=null;learn(c.id,'Social CI v'+b.sci.v+' neu erstellt','Onboarding');save();rOb();toast('Neue Version erstellt – bitte prüfen')}}
+  const rg=$('#sci-regen');if(rg)rg.onclick=()=>{if(b.sci.status==='freigegeben'&&!confirm('Neue Version erstellen? Sie muss danach wieder freigegeben werden.'))return;b.sci=genSci(c,b);b.ob.st.abschluss=null;learn(c.id,'Social CI v'+b.sci.v+' neu erstellt','Onboarding');save();rOb();toast('Neue Version erstellt – bitte prüfen');sciExamples(c,b,true)};
+  const sx=$('#sci-ex');if(sx)sx.onclick=()=>sciExamples(c,b,false)}
 // Kundenprofil: Onboarding-Karte
 function kpObHtml(c,b){const st=obState(c),o=b.ob,s=OBS[st.cur];const sci=b.sci;
   return `<div class="kp-ob"><div class="row2"><span>${o&&o.doneAt?'Abgeschlossen am '+esc(o.doneAt):sci&&sci.status==='freigegeben'?'Social CI steht – <b style="color:var(--ink)">Zugänge fehlen noch</b>':o?`Schritt ${st.cur+1} von ${OBS.length}: <b style="color:var(--ink)">${esc(s.t)}</b>`:'Noch nicht gestartet'}</span><b style="color:var(--ink)">${st.pct} %</b></div><div class="ob-bar"><i style="width:${st.pct}%"></i></div>

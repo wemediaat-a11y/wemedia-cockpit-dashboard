@@ -5,6 +5,7 @@
 //   {action:'ci', client_id, url, name?, type?}                       → {colors:[{hex,name}], font_head, font_body}  (CI-PDF oder Logo-Bild)
 //   {action:'prefill', client_id, url}                              → Vorschlag Positionierung/Tonalität aus der Website
 //   {action:'camps', client_id, month, ad_budget, notes?}           → {kampagnen:[…]}
+//   {action:'sciex', client_id, sci?}                                → {posts:[4 Beispiel-Posts zum Social CI]}
 //   {action:'brief', post_id | (client_id + post:{…}), notes?}     → {briefing:{…}, caption?}
 // Der API-Schlüssel liegt als Secret ANTHROPIC_API_KEY in Supabase, nie im Browser.
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
@@ -94,6 +95,25 @@ const TOOLS: Record<string, unknown> = {
       type: "object",
       properties: { kampagnen: { type: "array", items: KAMPAGNE, minItems: 1, maxItems: 2 } },
       required: ["kampagnen"],
+    },
+  },
+  sciex: {
+    name: "beispielposts",
+    description: "Gibt die Beispiel-Posts zum Social CI zurück.",
+    input_schema: {
+      type: "object",
+      properties: {
+        posts: { type: "array", minItems: 4, maxItems: 4, items: { type: "object", properties: {
+          saeule: { type: "string", description: "Content-Säule (Titel genau wie im Social CI)" },
+          format: { type: "string", enum: ["Feed", "Story", "Quadrat"] },
+          headline: { type: "string", description: "Headline auf dem Bild, höchstens 6 Wörter" },
+          subline: { type: "string", description: "Subline auf dem Bild, ein kurzer Satz (max. 9 Wörter)" },
+          cta: { type: "string", description: "Kurzer Button-/CTA-Text, 1–3 Wörter" },
+          bildidee: { type: "string", description: "Was auf dem Foto/Video zu sehen ist, ein Satz, passend zur Bildsprache" },
+          caption: { type: "string", description: "Fertige Caption laut Tonalität (Hook → Nutzen → CTA), 2–4 Sätze, ohne Hashtags" },
+        }, required: ["saeule", "format", "headline", "subline", "bildidee", "caption"] } },
+      },
+      required: ["posts"],
     },
   },
   ci: {
@@ -368,6 +388,24 @@ REGELN:
       const { out, usage } = await claude(TOOLS.monthbrief as { name: string }, prompt, 8000);
       await sb.from("events").insert({ type: "agent.monthbrief", client_id: clientId, payload: { month, urls, by: prof.name, usage } });
       return json({ briefing: String(out.briefing ?? ""), sources: urls, model: MODEL });
+    }
+
+    if (action === "sciex") {
+      const sci = body.sci && typeof body.sci === "object" ? slim(body.sci) : slim((brand?.data as Record<string, unknown>)?.sci ?? {});
+      const web = String((brand?.data as Record<string, unknown>)?.web ?? "").split(/[\s,]+/).find((u) => /^https?:\/\//i.test(u)) ?? "";
+      const site = web ? (await pageText(web)).slice(0, 8000) : "";
+      const prompt = `${ctxText}
+
+SOCIAL CI (aktueller Entwurf): ${JSON.stringify(sci).slice(0, 8000)}
+${site ? `WEBSITE ${web}:\n${site}\n` : ""}
+AUFGABE: Erstelle 4 Beispiel-Posts, die zeigen, wie das Social CI von ${client.name} in der Praxis aussieht – je einen pro Content-Säule, Formate gemischt (2× Feed, 1× Story, 1× Quadrat).
+- Echte, konkrete Inhalte dieser Marke (Angebote, Themen, Veranstaltungen von der Website) – keine Platzhalter-Floskeln, keine erfundenen Preise oder Daten.
+- Headline höchstens 6 Wörter, Anrede und Ton exakt laut Social CI.`;
+      const { out, usage } = await claude(TOOLS.sciex as { name: string }, prompt, 6000);
+      let ex = out.posts ?? [];
+      if (typeof ex === "string") { try { ex = JSON.parse(ex); } catch { ex = []; } }
+      await sb.from("events").insert({ type: "agent.sciex", client_id: clientId, payload: { by: prof.name, usage } });
+      return json({ posts: Array.isArray(ex) ? ex.slice(0, 4) : [], model: MODEL });
     }
 
     if (action === "camps") {

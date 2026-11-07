@@ -163,6 +163,76 @@ function bullets(title, items, F) {
         addFill(col, txt('•  ' + it, F.B, 17, INK, 145));
     return col;
 }
+// Beispiel-Posts (aus sci.examples) neben das Social CI legen – als Instanzen der Vorlagen.
+// Auch einzeln auf einem bestehenden Board nutzbar: const msg = await addExamples(DATA); (ersetzt nur den eigenen Frame „Beispiel-Posts“)
+async function addExamples(data) {
+    const sci = data.sci, ex = (sci.examples || []).slice(0, 4);
+    if (!ex.length) return 'keine Beispiel-Posts im Social CI';
+    const client = String(data.client || 'Kunde').slice(0, 60);
+    const colors = (sci.colors || []).slice(0, 8).map((c) => Object.assign({}, c));
+    { const seen = {}; colors.forEach((c, i) => { const r = c.role || 'Farbe'; seen[r] = (seen[r] || 0) + 1; if (seen[r] > 1) colors[i].role = r + ' ' + seen[r]; }); }
+    const F = await loadFonts(sci.fonts.head, sci.fonts.body);
+    const coll = (await figma.variables.getLocalVariableCollectionsAsync()).find((c) => c.name === client + ' · Social CI');
+    const allVars = await figma.variables.getLocalVariablesAsync('COLOR');
+    const vars = colors.map((c) => coll ? allVars.find((v) => v.variableCollectionId === coll.id && v.name === 'Farben/' + c.role) : undefined);
+    const page = (n) => figma.root.children.find((p) => p.name === n);
+    const ciPage = page('Social CI'), tplPage = page('Vorlagen');
+    if (!ciPage || !tplPage) throw new Error('Seite „Social CI“ oder „Vorlagen“ fehlt');
+    await ciPage.loadAsync(); await tplPage.loadAsync();
+    const comp = (n) => tplPage.children.find((c) => c.type === 'COMPONENT' && c.name === 'Vorlage · ' + n);
+    const comps = [comp('Feed / Carousel'), comp('Story / Reel'), comp('Quadrat (Ads)')];
+    if (comps.some((c) => !c)) throw new Error('Vorlagen-Komponenten fehlen');
+    for (const old of ciPage.children.filter((n) => n.name === 'Beispiel-Posts')) old.remove();
+    const idx = (re) => colors.findIndex((c) => re.test(c.role));
+    const iPrim = Math.max(0, idx(/Prim/));
+    const iBg = idx(/Hintergrund/) >= 0 ? idx(/Hintergrund/) : colors.reduce((b, c, i) => lum(hexRgb(c.hex)) > lum(hexRgb(colors[b].hex)) ? i : b, 0);
+    const iText = colors.reduce((b, c, i) => lum(hexRgb(c.hex)) < lum(hexRgb(colors[b].hex)) ? i : b, 0);
+    const iAcc = colors.findIndex((c, i) => i !== iPrim && i !== iBg && i !== iText);
+    const primRgb = hexRgb(colors[iPrim].hex), lightRgb = lum(hexRgb(colors[iBg].hex)) > 0.8 ? hexRgb(colors[iBg].hex) : WHITE;
+    const onPrim = lum(primRgb) < 0.45 ? lightRgb : INK, onPrimVar = lum(primRgb) < 0.45 && lum(hexRgb(colors[iBg].hex)) > 0.8 ? vars[iBg] : undefined;
+    const ciFrame = ciPage.children.find((n) => n.type === 'FRAME' && / · Social CI$/.test(n.name));
+    const exFrame = af('Beispiel-Posts', 'VERTICAL', 40, 80, [solid(WHITE)]);
+    exFrame.cornerRadius = 32;
+    ciPage.appendChild(exFrame);
+    exFrame.x = ciFrame ? ciFrame.x + ciFrame.width + 200 : 1640; exFrame.y = ciFrame ? ciFrame.y : 0;
+    exFrame.appendChild(txt('Beispiel-Posts', F.H, 56, INK));
+    exFrame.appendChild(txt('So sieht das Social CI in der Praxis aus – je ein Beispiel pro Content-Säule. Bilder laut Bildidee ersetzen.', F.B, 22, MUTED));
+    const row = af('Posts', 'HORIZONTAL', 64, 0);
+    row.counterAxisAlignItems = 'MIN';
+    exFrame.appendChild(row);
+    const ids = [];
+    for (let i = 0; i < ex.length; i++) {
+        const p = ex[i];
+        const fi = /Story/i.test(p.format) ? 1 : /Quadrat/i.test(p.format) ? 2 : 0;
+        const col = af(String(p.saeule || 'Beispiel ' + (i + 1)), 'VERTICAL', 24, 0);
+        row.appendChild(col);
+        const inst = comps[fi].createInstance();
+        col.appendChild(inst);
+        const hl = inst.findOne((n) => n.type === 'TEXT' && n.name === 'Headline');
+        const sl = inst.findOne((n) => n.type === 'TEXT' && n.name === 'Subline');
+        const ph = inst.findOne((n) => n.name.startsWith('Bild'));
+        const bar = inst.findOne((n) => n.name === 'Akzent');
+        if (i % 2 === 1) {
+            inst.fills = boundFill(vars[iPrim], primRgb);
+            for (const t of [hl, sl]) if (t) t.fills = boundFill(onPrimVar, onPrim);
+            if (bar && iAcc >= 0) bar.fills = boundFill(vars[iAcc], hexRgb(colors[iAcc].hex));
+            if (ph) ph.fills = [solid(onPrim, 0.12)];
+        }
+        const phBottom = ph ? ph.y + ph.height : 0;
+        if (hl) hl.characters = String(p.headline || '');
+        if (sl) { sl.characters = String(p.subline || ''); if (hl) sl.y = hl.y + hl.height + 32; }
+        if (ph && sl) { const top = sl.y + sl.height + 56; ph.y = top; ph.resize(ph.width, Math.max(120, phBottom - top)); }
+        const info = af('Info', 'VERTICAL', 10, 0);
+        col.appendChild(info);
+        info.counterAxisSizingMode = 'FIXED'; info.resize(inst.width, 10); info.primaryAxisSizingMode = 'AUTO';
+        addFill(info, txt((p.saeule || '') + ' · ' + (p.format || ''), F.BS, 24, INK));
+        if (p.bildidee) addFill(info, txt('Bild: ' + p.bildidee, F.B, 22, MUTED, 140));
+        if (p.cta) addFill(info, txt('CTA: ' + p.cta, F.B, 22, MUTED, 140));
+        if (p.caption) addFill(info, txt(p.caption, F.B, 22, INK, 145));
+        ids.push(inst.id);
+    }
+    return { exFrameId: exFrame.id, instanceIds: ids, count: ids.length };
+}
 async function build(data, logoBytes) {
     const sci = data.sci;
     const client = String(data.client || 'Kunde').slice(0, 60);
@@ -404,9 +474,11 @@ async function build(data, logoBytes) {
     postPage.appendChild(note);
     addFill(note, txt('Posts' + (month ? ' · ' + month : ''), F.H, 40, INK));
     addFill(note, txt('Hier landen die Beiträge aus dem Redaktionsplan. Für jeden Beitrag eine Vorlage aus der Seite „Vorlagen“ einsetzen (Assets → Lokale Komponenten) und Inhalte laut Briefing ersetzen.', F.B, 20, MUTED, 145));
+    let exNote = '';
+    if ((sci.examples || []).length) { const r = await addExamples(data); exNote = ' ' + r.count + ' Beispiel-Posts.'; }
     await figma.setCurrentPageAsync(ciPage);
     figma.currentPage.selection = [ci];
     
     const warn = [!F.headOk ? sci.fonts.head : '', !F.bodyOk && sci.fonts.body !== sci.fonts.head ? sci.fonts.body : ''].filter(Boolean);
-    return 'Board für ' + client + ' steht: Social CI, ' + vars.length + ' Farb-Variablen, 5 Textstile, ' + comps.length + ' Vorlagen.' + (warn.length ? ' Schrift fehlt auf diesem Rechner: ' + warn.join(', ') + ' – bitte installieren und Board neu bauen.' : '');
+    return 'Board für ' + client + ' steht: Social CI, ' + vars.length + ' Farb-Variablen, 5 Textstile, ' + comps.length + ' Vorlagen.' + exNote + (warn.length ? ' Schrift fehlt auf diesem Rechner: ' + warn.join(', ') + ' – bitte installieren und Board neu bauen.' : '');
 }
