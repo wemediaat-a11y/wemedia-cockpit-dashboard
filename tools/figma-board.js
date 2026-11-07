@@ -163,7 +163,7 @@ function bullets(title, items, F) {
         addFill(col, txt('•  ' + it, F.B, 17, INK, 145));
     return col;
 }
-// Beispiel-Posts (aus sci.examples) neben das Social CI legen – als Instanzen der Vorlagen.
+// Beispiel-Posts (aus sci.examples) neben das Social CI legen – aus den Vorlagen abgeleitet (gelöste Kopien).
 // Auch einzeln auf einem bestehenden Board nutzbar: const msg = await addExamples(DATA); (ersetzt nur den eigenen Frame „Beispiel-Posts“)
 async function addExamples(data) {
     const sci = data.sci, ex = (sci.examples || []).slice(0, 4);
@@ -206,12 +206,15 @@ async function addExamples(data) {
         const fi = /Story/i.test(p.format) ? 1 : /Quadrat/i.test(p.format) ? 2 : 0;
         const col = af(String(p.saeule || 'Beispiel ' + (i + 1)), 'VERTICAL', 24, 0);
         row.appendChild(col);
-        const inst = comps[fi].createInstance();
+        const inst = comps[fi].createInstance().detachInstance(); // Positionen lassen sich in Instanzen nicht überschreiben
+        inst.name = 'Beispiel · ' + (p.saeule || i + 1);
         col.appendChild(inst);
         const hl = inst.findOne((n) => n.type === 'TEXT' && n.name === 'Headline');
         const sl = inst.findOne((n) => n.type === 'TEXT' && n.name === 'Subline');
         const ph = inst.findOne((n) => n.name.startsWith('Bild'));
         const bar = inst.findOne((n) => n.name === 'Akzent');
+        const sz = inst.findOne((n) => n.name.startsWith('Safe Zone'));
+        if (sz) sz.visible = false;
         if (i % 2 === 1) {
             inst.fills = boundFill(vars[iPrim], primRgb);
             for (const t of [hl, sl]) if (t) t.fills = boundFill(onPrimVar, onPrim);
