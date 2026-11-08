@@ -14,7 +14,7 @@ Farbwelt, Markenelement, Stil, Logos, Bilder.
 3. **Bausteine** (Seite *Bausteine*): Farbvariablen, Textstile, Komponenten (s. 3.).
 4. **Social CI** (Handbuch): 00 Titel · 01 Farben · 02 Typografie · 03 Formate & Raster · 04 Texte & Tonalität.
 5. **Posts**: 6–8 Posts aus den Post-Typen (s. 5.), Inhalte aus Monats-Briefing/Website, Fotos thematisch zugeordnet.
-6. **Qualitätscheck** (s. 6.), dann Link in `brands.data.figma` und Figma-Aufgabe erledigen.
+6. **Qualitätscheck** (s. 6.), dann `brands.data.figma = {url, postsNode:<ID der Posts-Seite>, ciNode:<ID der Social-CI-Seite>, at, by}` setzen (Links im Cockpit öffnen direkt die Posts) und Figma-Aufgabe erledigen.
 
 ## 2. Farbwelt (aus 2–4 CI-Farben ableiten)
 | Rolle | AFGM | Ableitung allgemein |
