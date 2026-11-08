@@ -5,6 +5,7 @@
 //   {action:'ci', client_id, url, name?, type?}                       → {colors:[{hex,name}], font_head, font_body}  (CI-PDF oder Logo-Bild)
 //   {action:'prefill', client_id, url}                              → Vorschlag Positionierung/Tonalität aus der Website
 //   {action:'camps', client_id, month, ad_budget, notes?}           → {kampagnen:[…]}
+//   {action:'slots', client_id, month, count, slots, camps, material, notes?} → Plätze füllen + Fotos zuordnen
 //   {action:'sciex', client_id, sci?}                                → {posts:[4 Beispiel-Posts zum Social CI]}
 //   {action:'brief', post_id | (client_id + post:{…}), notes?}     → {briefing:{…}, caption?}
 // Der API-Schlüssel liegt als Secret ANTHROPIC_API_KEY in Supabase, nie im Browser.
@@ -95,6 +96,25 @@ const TOOLS: Record<string, unknown> = {
       type: "object",
       properties: { kampagnen: { type: "array", items: KAMPAGNE, minItems: 1, maxItems: 2 } },
       required: ["kampagnen"],
+    },
+  },
+  slots: {
+    name: "redaktionsplan",
+    description: "Gibt den Redaktionsplan mit gefüllten Beitrags- und Kampagnen-Plätzen zurück.",
+    input_schema: {
+      type: "object",
+      properties: {
+        strategie: { type: "string", description: "2–3 Sätze: roter Faden des Monats" },
+        posts: { type: "array", items: { ...POST, properties: { ...POST.properties,
+          platz: { type: "integer", description: "Nummer des Beitrags-Platzes (1 …)" },
+          bilder: { type: "array", items: { type: "string" }, description: "IDs der zugeordneten Bilder aus dem Material (z. B. B3); leer, wenn nichts passt" },
+          slides: { type: "array", items: { type: "string" }, description: "Nur bei Carousel: Inhalt je Slide, eine Zeile pro Slide (5–7)" } },
+          required: [...POST.required, "platz"] } },
+        kampagnen: { type: "array", items: { ...KAMPAGNE, properties: { ...KAMPAGNE.properties,
+          creatives: { type: "array", items: { type: "object", properties: { ...((KAMPAGNE.properties.creatives as { items: { properties: Record<string, unknown> } }).items.properties),
+            bilder: { type: "array", items: { type: "string" }, description: "IDs der Bilder für dieses Werbemittel" } }, required: ["format", "titel", "idee", "text"] } } } } },
+      },
+      required: ["strategie", "posts", "kampagnen"],
     },
   },
   sciex: {
@@ -317,6 +337,56 @@ AUFGABE: Erstelle den Redaktionsplan für ${client.name} für ${month} mit genau
       return json({ strategie: out.strategie ?? "", posts: posts2, kampagnen: kamp.slice(0, 3), model: MODEL });
     }
 
+    if (action === "slots") {
+      const month = String(body.month ?? "").match(/^\d{4}-\d{2}$/)?.[0];
+      if (!month) return json({ error: "Monat fehlt" }, 400);
+      const count = Math.max(1, Math.min(20, Number(body.count) || 8));
+      const signPrefix = Deno.env.get("SUPABASE_URL") + "/storage/v1/object/sign/brand-files/";
+      const material = (Array.isArray(body.material) ? body.material : []).slice(0, 40).map((m: Record<string, unknown>) => ({ id: String(m.id), name: String(m.name ?? "").slice(0, 80), url: String(m.url ?? ""), video: !!m.video }));
+      const ids = new Set(material.map((m: { id: string }) => m.id));
+      const pics = material.filter((m: { url: string; video: boolean }) => !m.video && m.url.startsWith(signPrefix)).slice(0, 16);
+      const ab = Number(body.ad_budget) || 0;
+      const taken = (posts ?? []).map((p) => (p.data as { date?: string }).date).filter((d) => d?.startsWith(month));
+      const prompt = `${ctxText}
+
+AUFGABE: Redaktionsplan für ${client.name} im ${month} mit genau ${count} Beiträgen – je Beitrags-Platz genau ein Beitrag (platz 1 bis ${count}).
+MODUS: ${body.mode === "einzeln" ? "PRO BEITRAG – das Social Media Management hat die Beiträge selbst festgelegt; du ergänzt nur, was fehlt." : "GESAMT-BRIEFING – verteile die Themen aus dem Briefing sinnvoll auf die Plätze; vom SMM festgelegte Plätze haben Vorrang."}
+
+BEITRAGS-PLÄTZE (vom Social Media Management, JSON):
+${JSON.stringify(body.slots ?? []).slice(0, 12000)}
+
+KAMPAGNEN-PLÄTZE (JSON):
+${JSON.stringify(body.camps ?? []).slice(0, 6000)}
+
+MATERIAL (Fotos/Videos des Kunden für diesen Monat): ${material.length ? material.map((m: { id: string; name: string; video: boolean }) => `${m.id} = ${m.name}${m.video ? " (Video)" : ""}`).join(" · ") : "keines"}
+${pics.length ? "Die Fotos siehst du unten jeweils mit ihrer ID." : ""}
+
+REGELN:
+- Was im Platz ausgefüllt ist, ist verbindlich: Format, Datum, „zu_sehen“ (→ Idee/Titel), Caption (wörtlich übernehmen, nur Tippfehler korrigieren), Slides und Bilder. Leere Felder ergänzt du passend zur Marke.
+- Ohne Datum: gleichmäßig über ${month} verteilen${taken.length ? `, nicht an diesen schon belegten Tagen: ${taken.join(", ")}` : ""}.
+- Bilder: Plätze mit „bilder“ behalten genau diese. Allen anderen Beiträgen ordnest du passende Bilder aus dem MATERIAL zu (IDs wie B3) – nach dem, was auf dem Foto wirklich zu sehen ist. Jedes Bild möglichst nur einmal; Carousel darf mehrere haben; passt nichts, bleibt „bilder“ leer (dann wird produziert).
+- Carousel: ohne vorgegebene Slides 5–7 Slides als je eine Zeile (Cover, Inhalte, CTA).
+- Kampagnen: festgelegte Kampagnen-Plätze übernehmen und ergänzen (Werbemittel inkl. Bilder-IDs). ${ab > 0 ? `Werbebudget ${ab} € – ohne festgelegte Kampagnen plane 1–2 Meta-Kampagnen, Summe = ${ab} €.` : "Ohne Werbebudget und ohne festgelegte Kampagnen: kampagnen = []."}
+- Nichts erfinden (Termine, Preise, Zahlen) – fehlende Fakten als [Platzhalter].${body.notes ? `\nBRIEFING & HINWEISE:\n${String(body.notes).slice(0, 6000)}` : ""}`;
+      const content: unknown[] = [{ type: "text", text: prompt }];
+      for (const m of pics) { content.push({ type: "text", text: `Bild ${m.id} (${m.name}):` }); content.push({ type: "image", source: { type: "url", url: m.url } }); }
+      const { out, usage } = await claude(TOOLS.slots as { name: string }, content, 16000);
+      let raw = out.posts ?? [];
+      if (typeof raw === "string") { try { raw = JSON.parse(raw); } catch { raw = []; } }
+      if (!Array.isArray(raw)) raw = [];
+      const clean = (a: unknown) => (Array.isArray(a) ? a.map(String).filter((x) => ids.has(x)) : []);
+      const posts2 = raw.filter((p: { date?: string }) => p && String(p.date ?? "").startsWith(month)).slice(0, count)
+        .map((p: Record<string, unknown>) => ({ ...p, bilder: clean(p.bilder), slides: Array.isArray(p.slides) ? p.slides.map(String) : [] }))
+        .sort((a: { platz?: number }, b: { platz?: number }) => (a.platz ?? 99) - (b.platz ?? 99));
+      if (!posts2.length) return json({ error: "Der Agent hat keinen gültigen Plan geliefert – bitte nochmal versuchen.", debug: JSON.stringify(out).slice(0, 1500) }, 502);
+      let kamp = out.kampagnen ?? [];
+      if (typeof kamp === "string") { try { kamp = JSON.parse(kamp); } catch { kamp = []; } }
+      if (!Array.isArray(kamp)) kamp = [];
+      kamp = kamp.slice(0, 3).map((k: Record<string, unknown>) => ({ ...k, creatives: (Array.isArray(k.creatives) ? k.creatives : []).map((c: Record<string, unknown>) => ({ ...c, bilder: clean(c.bilder) })) }));
+      await sb.from("events").insert({ type: "agent.slots", client_id: clientId, payload: { month, count: posts2.length, pics: pics.length, by: prof.name, usage } });
+      return json({ strategie: out.strategie ?? "", posts: posts2, kampagnen: kamp, model: MODEL });
+    }
+
     if (action === "ci") {
       const url = String(body.url ?? "");
       if (!url.startsWith(Deno.env.get("SUPABASE_URL") + "/storage/v1/object/sign/brand-files/")) return json({ error: "Nur Dateien aus dem Cockpit-Speicher" }, 400);
@@ -430,9 +500,9 @@ AUFGABE: Plane 1–2 Meta-Kampagnen (Facebook/Instagram) für ${client.name} im 
     const feedback = ((d.comments as { who: string; text: string }[]) ?? []).map((c) => `${c.who}: ${c.text}`);
     const prompt = `${ctxText}
 
-BEITRAG: ${JSON.stringify({ datum: d.date, format: d.type, plattform: d.pf, titel: d.title, idee: d.idea, saeule: d.pillar, caption: d.caption, hashtags: d.hashtags, kommentare: feedback })}
+BEITRAG: ${JSON.stringify({ datum: d.date, format: d.type, plattform: d.pf, titel: d.title, idee: d.idea, saeule: d.pillar, caption: d.caption, hashtags: d.hashtags, slides: d.slides || undefined, vorhandene_bilder: Array.isArray(d.media) && d.media.length ? (d.media as string[]).map((x) => String(x).split("/").pop()) : undefined, kommentare: feedback })}
 
-AUFGABE: Schreibe das Grafik-/Produktions-Briefing für diesen Beitrag. Kundenkommentare unbedingt einarbeiten.${body.notes ? `\nHINWEISE VOM SOCIAL MEDIA MANAGEMENT: ${String(body.notes).slice(0, 2000)}` : ""}`;
+AUFGABE: Schreibe das Grafik-/Produktions-Briefing für diesen Beitrag. Kundenkommentare unbedingt einarbeiten. Sind „vorhandene_bilder“ angegeben, plane mit genau diesen Fotos (keine neue Produktion nötig); bei Carousel das Briefing Slide für Slide.${body.notes ? `\nHINWEISE VOM SOCIAL MEDIA MANAGEMENT: ${String(body.notes).slice(0, 2000)}` : ""}`;
     const { out, usage } = await claude(TOOLS.brief as { name: string }, prompt, 8000);
     await sb.from("events").insert({ type: "agent.brief", client_id: clientId, payload: { post: post!.id, by: prof.name, usage } });
     let br = out.briefing;
